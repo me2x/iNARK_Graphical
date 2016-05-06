@@ -1,1 +1,0 @@
-# iNARK_Graphical
