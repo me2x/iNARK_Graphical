@@ -3,3 +3,4 @@ build/
 iNARK_Graphical.kdev4
 *swp
 .test/
+src/commons/
