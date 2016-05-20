@@ -7,6 +7,8 @@
 #include "graphic_vertex.h"
 #include <QGraphicsScene>
 #include <QTimer>
+#include "logical_vertex.h"
+#include "logical_edge.h"
 namespace Ui
 {
 class MainInterface;
@@ -86,8 +88,8 @@ private:
     void delete_edge(std::shared_ptr<Graphic_Edge>& to_be_deleted);
     //the two following maps will contain the reference between graphical and logical view. if one of the two views is resetted, the other has to be resetted too.
     //TODO sistemare con strutture dati "nuove"
- //   std::map<std::shared_ptr<Graphic_Vertex>,vertex_t> vertices;
- //   std::map<std::shared_ptr<Graphic_Edge>,edge_t> edges;
+    std::map<std::shared_ptr<Graphic_Vertex>,Logical_Vertex> vertices;
+    std::map<std::shared_ptr<Graphic_Edge>,Logical_Edge> edges;
     //following map is passed to all edges, that will update it whenever a move action is performed. the map has to be unique and is initialized here in the main window.
     //even if ownership is shared edge removal should only be performed in main. 
     //the edges should only perform updates: ie one removal and one insert, since the key (aka the line item) is changed

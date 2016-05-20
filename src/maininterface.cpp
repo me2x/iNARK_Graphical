@@ -13,9 +13,9 @@ MainInterface::MainInterface(QWidget* parent): QWidget(parent), ui(new Ui::MainI
     ui->setupUi(this);
     //Layer and Types scopes are set up from the enum in graph/graph_common
     for (int i = 0; i< SEARCH_LAYER_END;i++)
-        ui->chose_layer->insertItem(i, QString::fromStdString(get_search_layer_names(static_cast<Search_Layers>(i))));
+        ui->chose_layer->insertItem(i, QString::fromStdString(commons::get_search_layer_names(static_cast<Search_Layers>(i))));
     for (int i = 0; i< SEARCH_TYPE_END; i++)
-        ui->chose_type->insertItem(i, QString::fromStdString(get_search_type_name(static_cast<Search_Types>(i))));
+        ui->chose_type->insertItem(i, QString::fromStdString(commons::get_search_type_name(static_cast<Search_Types>(i))));
 
     connect(ui->Load_Button,SIGNAL(clicked(bool)),this,SLOT(load_file()));
     connect(ui->Save_Button,SIGNAL(clicked(bool)),this,SLOT(save_file()));

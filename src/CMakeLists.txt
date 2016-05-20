@@ -8,6 +8,7 @@ mainwindow.cpp
 main.cpp
 graphic_edge.cpp
 graphic_vertex.cpp
+logical_vertex.cpp
 )
 
 include(ExternalProject)
@@ -28,6 +29,7 @@ add_executable(iNARK_Graphical ${iNARK_Graphical_SRCS})
 add_dependencies(iNARK_Graphical demo) #force the dependency solution
 
 ExternalProject_Get_Property(demo binary_dir) #automatically gets the build directory
+message(${binary_dir})
 target_link_libraries(iNARK_Graphical ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${binary_dir}/libinark_commons.a) #linking is performed here. the name is the one in the CMakeLIst of the project.
 
 install(TARGETS iNARK_Graphical RUNTIME DESTINATION bin)
