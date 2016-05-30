@@ -1,28 +1,30 @@
 #include "logical_edge.h"
+#include <iostream>
+#include <boost/lexical_cast.hpp>
 
-
-void Logical_Edge::add_edge_opt(std::string from, std::string to, int from_port, int to_port)
+void Logical_Edge::print(std::ostream& comp_stream)
 {
-    std::shared_ptr<Actual_Edge> ptr;
-    ptr.reset(new Actual_Edge());
-    ptr->set_start_point(from,from_port);
-    ptr->set_arrival_point(to,to_port);
-    edge_opts.push_back(ptr);
-}
-void Logical_Edge::create_edge(std::string from, std::string to, int from_port, int to_port)
-{
-    std::shared_ptr<Actual_Edge> ptr;
-    ptr.reset(new Actual_Edge());
-    ptr->set_start_point(from,from_port);
-    ptr->set_arrival_point(to,to_port);
-    edge_opts.push_back(ptr);
-}
-void Logical_Edge::print(std::ostream& comp_stream, std::ostream& opt_stream)
-{
-
+    comp_stream << "print edge" <<std::endl;
 }
 
-void Actual_Edge::print(std::ostream& out_stream)
+std::pair< std::string, int > Logical_Edge::get_from()
 {
-
+    return std::make_pair(from,from_port);
+}
+std::pair< std::string, int > Logical_Edge::get_to()
+{
+    return std::make_pair(to,to_port);
+}
+Logical_Edge::Logical_Edge(std::string& from, std::string& to, int& from_port, int& to_port)
+{
+    this->from = from;
+    this->to = to;
+    this->from_port = from_port;
+    this->to_port = to_port;
+}
+std::string Logical_Edge::get_string()
+{
+    std::string st;
+    st=from+to+boost::lexical_cast<std::string>(from_port)+boost::lexical_cast<std::string>(to_port);
+    return st;
 }

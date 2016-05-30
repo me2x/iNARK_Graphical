@@ -9,7 +9,7 @@ class Graphic_Edge
 {
     public:
         Graphic_Edge();
-        void set_data(std::weak_ptr<Graphic_Vertex> from, std::weak_ptr<Graphic_Vertex> to, int fromport, int toport,std::shared_ptr<std::map<QGraphicsLineItem*,std::weak_ptr<Graphic_Edge>> >arrows); //get data. draw first.
+        std::shared_ptr<Graphic_Edge> set_data(std::weak_ptr<Graphic_Vertex> from, std::weak_ptr<Graphic_Vertex> to, int fromport, int toport,std::shared_ptr<std::map<QGraphicsLineItem*,std::shared_ptr<Graphic_Edge>> >arrows); //get data. draw first.
         ~Graphic_Edge();
         void update(); //delete old qgraphicsitem, create new ones.
 
@@ -20,10 +20,10 @@ class Graphic_Edge
         QGraphicsTextItem *label_start,*label_stop;
     private:
         //IMPORTANT: THIS HAVE TO BE MANUALLY HANDLED
-        std::shared_ptr<std::map<QGraphicsLineItem*,std::weak_ptr<Graphic_Edge>> >arrows;
+        std::shared_ptr<std::map<QGraphicsLineItem*,std::shared_ptr<Graphic_Edge>> >arrows;
         int start_port,stop_port;
-        std::weak_ptr<Graphic_Vertex> start_point;
-        std::weak_ptr<Graphic_Vertex> arrival_point;
+        std::shared_ptr<Graphic_Vertex> start_point;
+        std::shared_ptr<Graphic_Vertex> arrival_point;
 };
 
 #endif // GRAPHIC_EDGE_H

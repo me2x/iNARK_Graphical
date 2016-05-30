@@ -23,7 +23,7 @@ void Logical_Vertex::create_L3_component(std::string comp_name, int scheduler_ty
     std::shared_ptr<L3_Vertex> ptr;
     ptr.reset(new L3_Vertex());
     ptr->scheduler_type = scheduler_type;
-    ptr->slots = slots;
+    ptr->OS_slots = slots;
     components_opt.push_back(ptr);
     name = comp_name;
     layer = Layer::FUNCTION;
@@ -53,7 +53,7 @@ void Logical_Vertex::add_L3_opt(int scheduler_type, std::map< int, int > slots)
     std::shared_ptr<L3_Vertex> ptr;
     ptr.reset(new L3_Vertex());
     ptr->scheduler_type = scheduler_type;
-    ptr->slots = slots;
+    ptr->OS_slots = slots;
     components_opt.push_back(ptr);
 }
 void Logical_Vertex::add_L4_opt(int scheduler_type, int component_type, std::map< int, Port > ports)

@@ -23,6 +23,7 @@ struct Port
 
 class Logical_Vertex
 {
+public:
     std::vector<std::shared_ptr<Vertex_Virtual> > components_opt;
     std::string name;
     Layer layer;
@@ -50,14 +51,14 @@ public:
 class L3_Vertex : public Vertex_Virtual
 {
 public:
-    std::map<int, int> slots; //id and priority
+    std::map < int, int > OS_slots; //id and priority //the slots name is a QT define so it cant be used.
     int scheduler_type;
     void print(std::ostream& out_stream);
 };
 class L4_Vertex : public Vertex_Virtual
 {
 public:
-    std::map<int, Port>ports; //id is key, other values ar in the struct
+    std::map < int, Port >ports; //id is key, other values ar in the struct
     int scheduler_type;
     int component_type;
     void print(std::ostream& out_stream);

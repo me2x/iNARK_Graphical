@@ -9,6 +9,11 @@
 #include <QTimer>
 #include "logical_vertex.h"
 #include "logical_edge.h"
+#include <map>
+#include "popups/l1_popup.h"
+#include <set>
+#include "popups/ports_popup.h"
+
 namespace Ui
 {
 class MainInterface;
@@ -64,7 +69,8 @@ public slots:
     // called on all the popup->rejected()
     void no_data();
     // create the arrow item
-    void finalize_line();
+    void get_line_data_from_popup();
+    
     //check if an arrow or a component is selected and handles deletion (ie. for components deletes all the array related to him)
     void delete_items();
     
@@ -83,28 +89,34 @@ public slots:
     void save_file();
     
 private:
+    //draw the line having all the data in local variables
+    void finalize_line();
     //in order to eliminate both the item and the graphical item the scene has to be updated before the reset of the shared_ptr
-    void delete_vertex(std::shared_ptr<Graphic_Vertex>& to_be_deleted);
-    void delete_edge(std::shared_ptr<Graphic_Edge>& to_be_deleted);
+    void delete_vertex(Graphic_Vertex* to_be_deleted);
+    void delete_edge(std::shared_ptr<Graphic_Edge> to_be_deleted);
     //the two following maps will contain the reference between graphical and logical view. if one of the two views is resetted, the other has to be resetted too.
     //TODO sistemare con strutture dati "nuove"
-    std::map<std::shared_ptr<Graphic_Vertex>,Logical_Vertex> vertices;
-    std::map<std::shared_ptr<Graphic_Edge>,Logical_Edge> edges;
+    std::map<Graphic_Vertex*,std::shared_ptr<Logical_Vertex>> vertices; //vertex will not be passed and is the actual graphic thing
+    std::map<std::shared_ptr<Graphic_Edge>,std::shared_ptr<Logical_Edge>> edges; //edge is "superstructure" containing the real lines.
     //following map is passed to all edges, that will update it whenever a move action is performed. the map has to be unique and is initialized here in the main window.
     //even if ownership is shared edge removal should only be performed in main. 
     //the edges should only perform updates: ie one removal and one insert, since the key (aka the line item) is changed
-    std::shared_ptr<std::map<QGraphicsLineItem*,std::weak_ptr<Graphic_Edge> > >arrows; //old style ptr because Qt uses those, not sure of using shared_ptr as value.
+    std::shared_ptr<std::map<QGraphicsLineItem*,std::shared_ptr<Graphic_Edge> > >arrows; //old style ptr because Qt uses those, not sure of using shared_ptr as value.
     //graphics item once assigned then forgotten
     QGraphicsScene* scene;
     QTimer* timer;
     //graphics item whose pointers have to be stored in maps and deleted if removed from maps
-    std::shared_ptr<Graphic_Vertex> starting_object,arrival_object;
+    Graphic_Vertex* starting_object,*arrival_object;
     std::shared_ptr<Graphic_Edge> selected_edge;
     //popup vari ed eventuali :S
-    
-    
+    std::shared_ptr<L1_popup> l1;
+    std::shared_ptr<Ports_Popup> ports;
     //utilities
     bool is_drawing;
+    std::shared_ptr<std::set <std::string> > names;
+    std::set< std::string > edges_set; //just save the from-to names and use for checking. the other structures will handle the print and so on. this is only an utility for ease the check.
+    QGraphicsLineItem* current_line_item;
+    int from_port, to_port;
 };
 
 #endif // MAININTERFACE_H

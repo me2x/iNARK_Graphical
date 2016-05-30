@@ -1,22 +1,25 @@
 #include "graphic_edge.h"
 #include <boost/math/constants/constants.hpp>
 #include <QPen>
-void Graphic_Edge::set_data(std::weak_ptr<Graphic_Vertex> from, std::weak_ptr<Graphic_Vertex> to, int fromport, int toport,std::shared_ptr<std::map<QGraphicsLineItem*,std::weak_ptr<Graphic_Edge>> >arrows)
+#include "graphic_vertex.h"
+#include <QGraphicsScene>
+
+std::shared_ptr<Graphic_Edge> Graphic_Edge::set_data(std::weak_ptr<Graphic_Vertex> from, std::weak_ptr<Graphic_Vertex> to, int fromport, int toport,std::shared_ptr<std::map<QGraphicsLineItem*,std::shared_ptr<Graphic_Edge>> >arrows)
 {
-    /*
+    
     this->arrows=arrows;
-    arrival_point = to;
-    start_point = from;
+    arrival_point = to.lock();
+    start_point = from.lock();
     start_port = fromport;
     stop_port = toport;
     QPen blackpen = QPen(Qt::black);
-    QPointF* starting_point = new QPointF(from->x()+from->boundingRect().center().x(),from->y()+from->boundingRect().bottom());
-    QPointF* arrival_point2 = new QPointF (to->x()+to->boundingRect().center().x(),to->y()+to->boundingRect().top());
+    QPointF* starting_point = new QPointF(start_point->x()+start_point->boundingRect().center().x(),start_point->y()+start_point->boundingRect().bottom());
+    QPointF* arrival_point2 = new QPointF (arrival_point->x()+arrival_point->boundingRect().center().x(),arrival_point->y()+arrival_point->boundingRect().top());
     QLineF newline(*arrival_point2,*starting_point);
-    line = (to->scene()->addLine(newline,blackpen));
-    from->arriving_lines.insert(std::make_pair(to,this));
-    std::pair<ProvaRiquadro*,std::weak_ptr<Graphic_Edge>> tmppair = std::make_pair(from, this);
-    to->starting_lines.insert(tmppair);
+    line = (arrival_point->scene()->addLine(newline,blackpen));
+    //start_point->arriving_lines.insert(std::make_pair(to,this));
+    //std::pair<ProvaRiquadro*,std::weak_ptr<Graphic_Edge>> tmppair = std::make_pair(from, this);
+    //arrival_point->starting_lines.insert(tmppair);
     //std::cout<<"crash test: startinglines arrow addreess "<<tmppair.second<<std::endl;
     double angle = ::acos(newline.dx() / newline.length());
     if (newline.dy() >= 0)
@@ -25,25 +28,27 @@ void Graphic_Edge::set_data(std::weak_ptr<Graphic_Vertex> from, std::weak_ptr<Gr
     QPointF arrowP2 = newline.p1() + QPointF(sin(angle + boost::math::constants::pi<double>() - boost::math::constants::pi<double>() / 3) * 10,cos(angle + boost::math::constants::pi<double>() - boost::math::constants::pi<double>() / 3) * 10);
     QLineF tmp(*arrival_point2,arrowP1);
     
-    dx_line = (to->scene()->addLine(tmp,blackpen));
+    dx_line = (start_point->scene()->addLine(tmp,blackpen));
     QLineF tmp2(*arrival_point2,arrowP2);
     std::cout<<"crash test: draw line"<<std::endl;
-    sx_line = (to->scene()->addLine(tmp2,blackpen));
+    sx_line = (start_point->scene()->addLine(tmp2,blackpen));
     
     line->setFlag(QGraphicsItem::ItemIsSelectable);
     label_start = new QGraphicsTextItem();
     label_start->setPos(starting_point->x()-(newline.dx()/2), starting_point->y()-newline.dy()+(2*newline.dy()/3)-5); //stessa y ottenuta cosi. 
     label_start->setPlainText(fromport!=0? QString::number(fromport): "");
-    to->scene()->addItem(label_start);
+    arrival_point->scene()->addItem(label_start);
     label_stop = new QGraphicsTextItem();
     label_stop->setPos(arrival_point2->x()+(newline.dx()/2), arrival_point2->y()+(newline.dy()/3)-5);
     label_stop->setPlainText(toport!=0? QString::number(toport): "");
-    to->scene()->addItem(label_stop);
+    arrival_point->scene()->addItem(label_stop);
     std::cout<< "arrow to be inserted"<<std::endl;
     std::cout << "sizw is: "<<arrows->size()<<std::endl;
-    arrows->insert(std::make_pair(line,this)); 
+    std::shared_ptr<Graphic_Edge> ptr;
+    ptr.reset(this);
+    arrows->insert(std::make_pair(line,ptr)); 
     std::cout<< "arrow created"<<std::endl;
-    */
+    return ptr;
 }
 
 void Graphic_Edge::update()
@@ -80,4 +85,17 @@ void Graphic_Edge::update()
     label_start->setPos(starting_point->x()-newline.dx()+(2*newline.dx()/3), starting_point->y()-newline.dy()+(2*newline.dy()/3)-5); //stessa y ottenuta cosi. 
     label_stop->setPos(arrival_point_point->x()+(newline.dx()/3), arrival_point_point->y()+(newline.dy()/3)-5);
     */
+}
+Graphic_Edge::~Graphic_Edge()
+{
+    arrows.reset();
+    start_point.reset();
+    arrival_point.reset();
+    
+    //pointers of no more useful objetcs, have to be deallocated.
+    delete dx_line;
+    delete sx_line;
+    delete label_start;
+    delete label_stop;
+    delete line;
 }

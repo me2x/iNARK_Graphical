@@ -4,6 +4,8 @@
 #include <QGraphicsItem>
 #include <QBrush>
 #include <memory>
+
+#include <QPainter>
 class Graphic_Edge;
 class Graphic_Vertex : public QGraphicsObject
 {
