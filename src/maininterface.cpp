@@ -86,6 +86,12 @@ void MainInterface::save_file()
         (*it).second->print(myfile,opt);
         std::cout << "after printing " <<std::endl;
     }
+    for (std::map<std::shared_ptr<Graphic_Edge>,std::shared_ptr<Logical_Edge>>::iterator it =  edges.begin(); it !=  edges.end();++it)
+    {
+        std::cout << "printing " <<std::endl;
+        (*it).second->print(myfile);
+        std::cout << "after printing " <<std::endl;
+    }
     opt << "option stream" <<std::endl;
     myfile<<opt.str();
     myfile.close(); 
@@ -152,7 +158,7 @@ void MainInterface::break_line_drawing()
     std::cerr<<"selecteditems size: "<<scene->selectedItems().size()<<std::endl;
     starting_object = nullptr;
     is_drawing = false;
-    
+    std::cout <<"exit from break line"<<std::endl;
 }
 
 void MainInterface::component_clicked()
@@ -406,8 +412,11 @@ void MainInterface::mousePressEvent(QMouseEvent* e)
     if (e->button() == Qt::RightButton)
     {
         break_line_drawing();
-        selected_edge->line->setPen(QPen(Qt::black));
-        selected_edge.reset();
+        if (selected_edge.use_count()!=0)
+        {
+            selected_edge->line->setPen(QPen(Qt::black));
+            selected_edge.reset();
+        }
     }
     else
     {
@@ -477,7 +486,8 @@ void MainInterface::start_search()
 
 void MainInterface::start_update_L1_object()
 {
-
+    std::cout<<"updating l1"<<std::endl;
+    l1->activateWindow();
 }
 
 void MainInterface::start_update_L2_object()
