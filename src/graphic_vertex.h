@@ -26,7 +26,7 @@ public:
     void setRect(QRectF rect);
     QGraphicsTextItem * text;
     virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = 0);
-    std::vector<std::weak_ptr<Graphic_Edge> > related_edges; //weak ptrs, when deleting return this vector and let the father (i.e. who owns the shared pointer of those weak) do the work.
+    std::vector<std::weak_ptr<Graphic_Edge>> related_edges; //weak ptrs, when deleting return this vector and let the father (i.e. who owns the shared pointer of those weak) do the work.
     void redraw_lines();
     
 signals:

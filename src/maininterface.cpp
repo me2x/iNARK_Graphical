@@ -11,7 +11,6 @@
 #include <vector>
 #include <QMouseEvent>
 
-
 MainInterface::MainInterface(QWidget* parent): QWidget(parent), ui(new Ui::MainInterface)
 {
     ui->setupUi(this);
@@ -45,6 +44,7 @@ MainInterface::MainInterface(QWidget* parent): QWidget(parent), ui(new Ui::MainI
     scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(scene);
     scene->setParent(ui->graphicsView);
+    arrows.reset(new std::map<QGraphicsLineItem*,std::shared_ptr<Graphic_Edge> >);
     std::cout << "setup finished" <<std::endl;
 }
 
@@ -77,7 +77,20 @@ void MainInterface::save_file()
     );
     if (!filename.isNull())
     {
-        std::cout <<"save the file somehow" <<std::endl;
+        std::ofstream myfile;
+        std::stringstream opt;
+    myfile.open (filename.toStdString());
+    for (std::map<Graphic_Vertex*,std::shared_ptr<Logical_Vertex>>::iterator it = vertices.begin(); it != vertices.end();++it)
+    {
+        std::cout << "printing " <<std::endl;
+        (*it).second->print(myfile,opt);
+        std::cout << "after printing " <<std::endl;
+    }
+    opt << "option stream" <<std::endl;
+    myfile<<opt.str();
+    myfile.close(); 
+
+        
     }
 }
 //TODO logical deletion has to be added
@@ -91,7 +104,7 @@ void MainInterface::delete_edge(std::shared_ptr< Graphic_Edge > to_be_deleted)
     //remove from the edges map. logical value
     edges.erase(to_be_deleted);
     //remove from the scene.
-    std::cout<<"tobedeeleted counter" << to_be_deleted.use_count()<<std::endl;
+    std::cout<<"tobedeeleted counter internal beefore" << to_be_deleted.use_count()<<std::endl;
     scene->removeItem(to_be_deleted->dx_line);
     scene->removeItem(to_be_deleted->sx_line);
     scene->removeItem(to_be_deleted->line);
@@ -99,30 +112,57 @@ void MainInterface::delete_edge(std::shared_ptr< Graphic_Edge > to_be_deleted)
     scene->removeItem(to_be_deleted->label_stop);
 
     to_be_deleted.reset();
+    std::cout<<"tobedeeleted counter inteernal afteer" << to_be_deleted.use_count()<<std::endl;
 }
 
 //TODO logical deletion has to be added
 void MainInterface::delete_vertex(Graphic_Vertex* to_be_deleted)
 {
+    break_line_drawing();
     scene->removeItem(to_be_deleted);
     names->erase(vertices.at(to_be_deleted)->name);
     vertices.erase(to_be_deleted);
+    //IMPORTANT delete the edges first because they contains pointer to vertex that will be deleted here. to avoid segfault.
     
-    for (std::vector<std::weak_ptr<Graphic_Edge>>::iterator it = to_be_deleted->related_edges.begin(); it != to_be_deleted->related_edges.end(); ++it)
+    
+    
+    for (std::vector<std::weak_ptr<Graphic_Edge>>::iterator it = to_be_deleted->related_edges.begin(); it != to_be_deleted->related_edges.end(); )
     {
-        delete_edge((*it).lock());
+        std::cout <<"inside related edges removal loop"<<std::endl;
+        if (std::shared_ptr<Graphic_Edge> ptr = (*it).lock())
+        {
+            delete_edge(ptr);
+            ++it;
+        }
+        else
+            it = to_be_deleted->related_edges.erase(it);
+        
     }
+     std::cout <<"after related edges removal" <<std::endl;
     delete to_be_deleted;
     starting_object = nullptr;
 }
 
 void MainInterface::break_line_drawing()
 {
+    if (!is_drawing) return;
+    
+    scene->removeItem(current_line_item);
+    starting_object->setSelected(false);
+    std::cerr<<"selecteditems size: "<<scene->selectedItems().size()<<std::endl;
+    starting_object = nullptr;
     is_drawing = false;
+    
 }
 
 void MainInterface::component_clicked()
 {
+    if (selected_edge.use_count() != 0) 
+    {
+        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge.reset();
+    }
+    
  std::cout<<"component_clicked"<<std::endl;
         QPoint p1 = QCursor::pos();
         QPoint p2 = ui->graphicsView->mapFromGlobal(p1);
@@ -196,7 +236,7 @@ void MainInterface::component_clicked()
                 current_line_item = scene->addLine(newline,blackpen);
               }
 
-            starting_object = item;
+            
         }
         else 
             std::cout << " other type, value is: " << item_tmp->type()<<std::endl;
@@ -237,14 +277,20 @@ void MainInterface::create_L5_obj()
 }
 
 void MainInterface::delete_items()
-{
-if (selected_edge != nullptr)
+{    
+    if (selected_edge.use_count() != 0)
     {
+        std::cout<<"deleting edgee"<<std::endl;
+        std::cout<<"tobedeeleted counter before" << selected_edge.use_count()<<std::endl;
         delete_edge(selected_edge);
+        selected_edge.reset();
+        std::cout<<"tobedeeleted counter afteer" << selected_edge.use_count()<<std::endl;
     }
-    else if (starting_object != 0 && starting_object != nullptr)
+    else if (starting_object != nullptr)
     {
+        std::cout<<"deleting veertex"<<std::endl;
         delete_vertex(starting_object);
+        std::cout <<"out from delete vertex"<<std::endl;
     }
 }
 void MainInterface::get_line_data_from_popup()
@@ -257,16 +303,35 @@ void MainInterface::get_line_data_from_popup()
 void MainInterface::finalize_line()
 {
     std::cout <<"drawing line"<<std::endl;
-    std::weak_ptr<Graphic_Vertex> start, arrive;
-    start.reset(starting_object);
-    arrive.reset(arrival_object);
-    Graphic_Edge edge;
-    //insert in arrows done inside the function
-    std::shared_ptr<Graphic_Edge> edge_ptr = edge.set_data(start,arrive,from_port,to_port,arrows);
-    Logical_Edge l_edge((vertices.at(starting_object))->name,(vertices.at(arrival_object))->name,from_port,to_port);
-    edges_set.insert(l_edge.get_string());
+    std::shared_ptr<Logical_Edge> l_edge_ptr;
+    l_edge_ptr.reset(new Logical_Edge((vertices.at(starting_object))->name,(vertices.at(arrival_object))->name,from_port,to_port));
+    if (edges_set.find(l_edge_ptr->get_string())==edges_set.end())
+    {
+        edges_set.insert(l_edge_ptr->get_string());
+        std::shared_ptr<Graphic_Edge> edge;
+        edge.reset(new Graphic_Edge());
+        //insert in arrows done inside the function
+        edge->set_data(starting_object,arrival_object,from_port,to_port,arrows,edge);
+        std::cout <<"graph edge created"<<std::endl;
+        edges.insert(std::make_pair(edge,l_edge_ptr));
+    }
+    else
+        std::cout<<"edge already exists"<<l_edge_ptr->get_string()<<std::endl;
+    
+    
+    arrival_object->setSelected(false);
+    arrival_object->setArrowTarget();
+    std::cout << "arrival object is: "<<arrival_object<<std::endl;
     arrival_object = nullptr;
+    starting_object->setSelected(false);
     starting_object = nullptr;
+    if (selected_edge.use_count() != 0) 
+    {
+        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge.reset();
+    }
+    std::cout << "fine finalize line, item selected count is:" <<scene->selectedItems().count()<<std::endl;
+    std::cout << "arrival object is: "<<arrival_object<<std::endl;
 }
 
 void MainInterface::finalize_update_L1_object()
@@ -296,6 +361,11 @@ void MainInterface::finalize_update_L5_object()
 
 void MainInterface::Layer_1_press_event()
 {
+    if (selected_edge.use_count() != 0)
+    {
+        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge.reset();
+    }
     std::cout<<"layer 1 press event triggered"<<std::endl;
     l1.reset(new L1_popup());
     l1->set_names(names);
@@ -336,7 +406,8 @@ void MainInterface::mousePressEvent(QMouseEvent* e)
     if (e->button() == Qt::RightButton)
     {
         break_line_drawing();
-        selected_edge = nullptr;
+        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge.reset();
     }
     else
     {
@@ -351,7 +422,16 @@ void MainInterface::mousePressEvent(QMouseEvent* e)
             std::cout<< "type is:" << (*it)->type()<<std::endl;
             QGraphicsLineItem* item = qgraphicsitem_cast<QGraphicsLineItem*>(*it);
             if (arrows->count(item) != 0)
+            {
+                if (selected_edge.use_count() != 0)
+                {
+                    selected_edge->line->setPen(QPen(Qt::black));
+                }
                 selected_edge = arrows->at(item);
+                selected_edge->line->setPen(QPen(Qt::red)); 
+                
+                
+            }
         }
     }
     //QWidget::mousePressEvent(e);
@@ -364,7 +444,19 @@ void MainInterface::no_data()
 
 void MainInterface::redraw_line()
 {
-
+    if (!is_drawing) return;
+    //std::cout<<"inside redraw line" <<std::endl;
+    
+    QPen blackpen = QPen(Qt::black);
+      //std::cout << "curr line != 0" <<std::endl;
+    QPoint p1 = QCursor::pos();
+    QPoint p2 = ui->graphicsView->mapFromGlobal(p1);
+    QPointF p = ui->graphicsView->mapToScene(p2);
+    scene->removeItem(current_line_item);
+        
+    QLineF newline(starting_object->x()+starting_object->boundingRect().center().x(),starting_object->y()+starting_object->boundingRect().bottom(),p.x()-3, p.y()-3);
+    current_line_item =  scene->addLine(newline,blackpen);
+       
 }
 
 void MainInterface::start_search()

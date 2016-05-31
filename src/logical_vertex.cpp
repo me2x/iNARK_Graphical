@@ -67,10 +67,14 @@ void Logical_Vertex::add_L4_opt(int scheduler_type, int component_type, std::map
 }
 void Logical_Vertex::print(std::ostream& comp_stream, std::ostream& opt_stream)
 {
+    std::cout <<"enter print"<<std::endl;
+    std::cout <<"comp opt sizee is: "<<components_opt.size()<<std::endl;
     if (components_opt.size()==1)
     {
-        comp_stream << "<component>"<<std::endl<<"<name>"<<name<<"</name>"<<std::endl<<"</component>"<<std::endl; //has to be finished
+        comp_stream << "<component>"<<std::endl<<"<name>"<<name<<"</name>"<<std::endl;
         (components_opt.at(0))->print(comp_stream);
+        comp_stream <<"</component>"<<std::endl; //has to be finished
+        
     }
     else
     {

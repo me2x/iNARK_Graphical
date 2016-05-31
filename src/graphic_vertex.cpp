@@ -86,11 +86,18 @@ void Graphic_Vertex::setRect(QRectF rect)
 }
 void Graphic_Vertex::redraw_lines()
 {
-    for (std::vector<std::weak_ptr<Graphic_Edge> >::iterator it = related_edges.begin(); it!= related_edges.end();++it)
+    for (std::vector<std::weak_ptr<Graphic_Edge> >::iterator it = related_edges.begin(); it!= related_edges.end();)
     {
         std::weak_ptr<Graphic_Edge> tmp = (*it);
-        std::shared_ptr<Graphic_Edge> ptr = tmp.lock();
-        ptr->update();
+        if (std::shared_ptr<Graphic_Edge> ptr = tmp.lock())
+        {
+            ptr->update();
+            ++it;
+        }
+        else
+        {
+            it = related_edges.erase(it);
+        }
     }
 }
 QRectF Graphic_Vertex::rect()

@@ -27,6 +27,7 @@ void L1_popup::accept()
     //TODO controllo name non sia gia in uso
     if (names->count(data->name) == 0){
         std::cout <<"name accepted"<<std::endl;
+        data->create_L1_component(data->name);
         names->insert(data->name);
         QDialog::accept();
     }

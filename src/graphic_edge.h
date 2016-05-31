@@ -2,14 +2,14 @@
 #define GRAPHIC_EDGE_H
 
 #include <memory>
-#include <QGraphicsLineItem>
-#include <QGraphicsTextItem>
+#include <QGraphicsItem>
+//#include <QGraphicsTextItem>
 class Graphic_Vertex;
 class Graphic_Edge
 {
     public:
         Graphic_Edge();
-        std::shared_ptr<Graphic_Edge> set_data(std::weak_ptr<Graphic_Vertex> from, std::weak_ptr<Graphic_Vertex> to, int fromport, int toport,std::shared_ptr<std::map<QGraphicsLineItem*,std::shared_ptr<Graphic_Edge>> >arrows); //get data. draw first.
+        void set_data(Graphic_Vertex* from, Graphic_Vertex* to, int fromport, int toport,std::shared_ptr<std::map<QGraphicsLineItem*,std::shared_ptr<Graphic_Edge>> >arrows,std::shared_ptr<Graphic_Edge>ptr); //get data. draw first.
         ~Graphic_Edge();
         void update(); //delete old qgraphicsitem, create new ones.
 
@@ -22,8 +22,8 @@ class Graphic_Edge
         //IMPORTANT: THIS HAVE TO BE MANUALLY HANDLED
         std::shared_ptr<std::map<QGraphicsLineItem*,std::shared_ptr<Graphic_Edge>> >arrows;
         int start_port,stop_port;
-        std::shared_ptr<Graphic_Vertex> start_point;
-        std::shared_ptr<Graphic_Vertex> arrival_point;
+        Graphic_Vertex* start_point;
+        Graphic_Vertex* arrival_point;
 };
 
 #endif // GRAPHIC_EDGE_H
