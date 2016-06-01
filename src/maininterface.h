@@ -11,6 +11,10 @@
 #include "logical_edge.h"
 #include <map>
 #include "popups/l1_popup.h"
+#include "popups/l2_popup.h"
+#include "popups/l3_popup.h"
+#include "popups/l4_popup.h"
+#include "popups/l5_popup.h"
 #include <set>
 #include "popups/ports_popup.h"
 
@@ -110,6 +114,10 @@ private:
     std::shared_ptr<Graphic_Edge> selected_edge;
     //popup vari ed eventuali :S
     std::shared_ptr<L1_popup> l1;
+    std::shared_ptr<l2_popup> l2;
+    std::shared_ptr<l3_popup> l3;
+    std::shared_ptr<l4_popup> l4;
+    std::shared_ptr<l5_popup> l5;
     std::shared_ptr<Ports_Popup> ports;
     //utilities
     bool is_drawing;

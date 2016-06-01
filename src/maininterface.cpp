@@ -387,22 +387,82 @@ void MainInterface::Layer_1_press_event()
 
 void MainInterface::Layer_2_press_event()
 {
-
+if (selected_edge.use_count() != 0)
+    {
+        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge.reset();
+    }
+    std::cout<<"layer 2 press event triggered"<<std::endl;
+    l2.reset(new l2_popup());
+    l2->set_names(names);
+       std::cout<<"layer 2 press event popup creation"<<std::endl;  
+    connect(l2.get(),SIGNAL(accepted()),this,SLOT(create_L2_obj()));
+    connect(l2.get(),SIGNAL(rejected()),this,SLOT(no_data()));
+       std::cout<<"layer 2 press event popup connection"<<std::endl;
+    l2->exec();
+    l2->activateWindow();
+  
+    std::cout<<"layer 2 press event popup execution"<<std::endl;
 }
 
 void MainInterface::Layer_3_press_event()
 {
-
+if (selected_edge.use_count() != 0)
+    {
+        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge.reset();
+    }
+    std::cout<<"layer 3 press event triggered"<<std::endl;
+    l3.reset(new l3_popup());
+    l3->set_names(names);
+       std::cout<<"layer 3 press event popup creation"<<std::endl;  
+    connect(l3.get(),SIGNAL(accepted()),this,SLOT(create_L3_obj()));
+    connect(l3.get(),SIGNAL(rejected()),this,SLOT(no_data()));
+       std::cout<<"layer 3 press event popup connection"<<std::endl;
+    l3->exec();
+    l3->activateWindow();
+  
+    std::cout<<"layer 3 press event popup execution"<<std::endl;
 }
 
 void MainInterface::Layer_4_press_event()
 {
-
+if (selected_edge.use_count() != 0)
+    {
+        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge.reset();
+    }
+    std::cout<<"layer 3 press event triggered"<<std::endl;
+    l4.reset(new l4_popup());
+    l4->set_names(names);
+       std::cout<<"layer 3 press event popup creation"<<std::endl;  
+    connect(l4.get(),SIGNAL(accepted()),this,SLOT(create_L4_obj()));
+    connect(l4.get(),SIGNAL(rejected()),this,SLOT(no_data()));
+       std::cout<<"layer 3 press event popup connection"<<std::endl;
+    l4->exec();
+    l4->activateWindow();
+  
+    std::cout<<"layer 3 press event popup execution"<<std::endl;
 }
 
 void MainInterface::Layer_5_press_event()
 {
-
+if (selected_edge.use_count() != 0)
+    {
+        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge.reset();
+    }
+    std::cout<<"layer 3 press event triggered"<<std::endl;
+    l5.reset(new l5_popup());
+    l5->set_names(names);
+       std::cout<<"layer 3 press event popup creation"<<std::endl;  
+    connect(l5.get(),SIGNAL(accepted()),this,SLOT(create_L5_obj()));
+    connect(l5.get(),SIGNAL(rejected()),this,SLOT(no_data()));
+       std::cout<<"layer 3 press event popup connection"<<std::endl;
+    l5->exec();
+    l5->activateWindow();
+  
+    std::cout<<"layer 3 press event popup execution"<<std::endl;
 }
 
 void MainInterface::mousePressEvent(QMouseEvent* e)
