@@ -1,0 +1,2 @@
+/usr/bin/ar cq libpopups.a  CMakeFiles/popups.dir/l1_popup.cpp.o CMakeFiles/popups.dir/l2_popup.cpp.o CMakeFiles/popups.dir/l3_popup.cpp.o CMakeFiles/popups.dir/l4_popup.cpp.o CMakeFiles/popups.dir/l5_popup.cpp.o CMakeFiles/popups.dir/tab_popup.cpp.o CMakeFiles/popups.dir/ports_popup.cpp.o CMakeFiles/popups.dir/popups_automoc.cpp.o
+/usr/bin/ranlib libpopups.a

@@ -6,8 +6,8 @@ l2_popup::l2_popup(QDialog* parent): QDialog(parent), ui(new Ui::l2_popup)
     ui->setupUi(this);
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(accept()));
     connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(reject()));
-    data.reset(new Logical_Vertex());
-    data->name = "";
+    //data.reset(new Logical_Vertex());
+    //data->name = "";
 }
 
 l2_popup::~l2_popup()
@@ -22,7 +22,7 @@ void l2_popup::exec()
 
 void l2_popup::accept()
 {
-    QString text = ui->lineEdit->text();
+    /*QString text = ui->lineEdit->text();
     data->name = text.toStdString();
     //TODO controllo name non sia gia in uso
     if (names->count(data->name) == 0){
@@ -36,7 +36,7 @@ void l2_popup::accept()
         std::cout <<"name refused"<<std::endl;
         QDialog::reject();
         
-    }
+    }*/
 }
 std::shared_ptr<Logical_Vertex> l2_popup::get_data()
 {

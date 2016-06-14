@@ -7,6 +7,7 @@ l2_popup.cpp
 l3_popup.cpp
 l4_popup.cpp
 l5_popup.cpp
+tab_popup.cpp
 ports_popup.cpp
 )
 message(${binary_dir})

@@ -1,6 +1,6 @@
 #include "logical_vertex.h"
 
-void Logical_Vertex::create_L1_component(std::string comp_name)
+void Logical_Vertex::create_L1_component(std::shared_ptr< std::string > comp_name)
 {
     
     std::shared_ptr<L1_Vertex> ptr;
@@ -9,7 +9,7 @@ void Logical_Vertex::create_L1_component(std::string comp_name)
     name = comp_name;
     layer = Layer::FUNCTION;
 }
-void Logical_Vertex::create_L2_component(std::string comp_name)
+void Logical_Vertex::create_L2_component(std::shared_ptr<std::string> comp_name)
 {
     
     std::shared_ptr<L2_Vertex> ptr;
@@ -18,7 +18,7 @@ void Logical_Vertex::create_L2_component(std::string comp_name)
     name = comp_name;
     layer = Layer::FUNCTION;
 }
-void Logical_Vertex::create_L3_component(std::string comp_name, int scheduler_type, std::map< int, int > slots)
+void Logical_Vertex::create_L3_component(std::shared_ptr< std::string > comp_name, int scheduler_type, std::shared_ptr< std::map< int, int > > slots)
 {
     std::shared_ptr<L3_Vertex> ptr;
     ptr.reset(new L3_Vertex());
@@ -28,7 +28,7 @@ void Logical_Vertex::create_L3_component(std::string comp_name, int scheduler_ty
     name = comp_name;
     layer = Layer::FUNCTION;
 }
-void Logical_Vertex::create_L4_component(std::string comp_name, int scheduler_type, int component_type, std::map< int, Port > ports)
+void Logical_Vertex::create_L4_component(std::shared_ptr< std::string > comp_name, int scheduler_type, int component_type, std::shared_ptr< std::map< int, Port > > ports)
 {
     std::shared_ptr<L4_Vertex> ptr;
     ptr.reset(new L4_Vertex());
@@ -39,7 +39,7 @@ void Logical_Vertex::create_L4_component(std::string comp_name, int scheduler_ty
     name = comp_name;
     layer = Layer::FUNCTION;
 }
-void Logical_Vertex::create_L5_component(std::string comp_name)
+void Logical_Vertex::create_L5_component(std::shared_ptr<std::string> comp_name)
 {
     
     std::shared_ptr<L5_Vertex> ptr;
@@ -48,19 +48,21 @@ void Logical_Vertex::create_L5_component(std::string comp_name)
     name = comp_name;
     layer = Layer::FUNCTION;
 }
-void Logical_Vertex::add_L3_opt(int scheduler_type, std::map< int, int > slots)
+void Logical_Vertex::add_L3_opt(int scheduler_type)
 {
     std::shared_ptr<L3_Vertex> ptr;
     ptr.reset(new L3_Vertex());
     ptr->scheduler_type = scheduler_type;
-    ptr->OS_slots = slots;
+    std::shared_ptr<L3_Vertex> tmp = std::static_pointer_cast<L3_Vertex>(components_opt.at(0));
+    ptr->OS_slots = tmp->OS_slots;
     components_opt.push_back(ptr);
 }
-void Logical_Vertex::add_L4_opt(int scheduler_type, int component_type, std::map< int, Port > ports)
+void Logical_Vertex::add_L4_opt(int scheduler_type, int component_type)
 {
     std::shared_ptr<L4_Vertex> ptr;
     ptr.reset(new L4_Vertex());
-    ptr->ports = ports;
+    std::shared_ptr<L4_Vertex> tmp = std::static_pointer_cast<L4_Vertex>(components_opt.at(0));
+    ptr->ports = tmp->ports;
     ptr->component_type = component_type;
     ptr->scheduler_type = scheduler_type;
     components_opt.push_back(ptr);

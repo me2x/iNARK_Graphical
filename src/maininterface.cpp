@@ -126,7 +126,7 @@ void MainInterface::delete_vertex(Graphic_Vertex* to_be_deleted)
 {
     break_line_drawing();
     scene->removeItem(to_be_deleted);
-    names->erase(vertices.at(to_be_deleted)->name);
+    names->erase(*(vertices.at(to_be_deleted)->name.get()));
     vertices.erase(to_be_deleted);
     //IMPORTANT delete the edges first because they contains pointer to vertex that will be deleted here. to avoid segfault.
     
@@ -258,7 +258,7 @@ void MainInterface::create_L1_obj()
      connect(temp,SIGNAL(riquadroMosso()),this,SLOT(break_line_drawing()));
      connect(temp,SIGNAL(riquadroCliccatoDx()),this,SLOT(break_line_drawing()));
      connect(temp,SIGNAL(riquadroDoubleClick()),this,SLOT(start_update_L1_object()));
-     temp->text->setPlainText(QString::fromStdString(data->name));
+     temp->text->setPlainText(QString::fromStdString(*(data->name)));
      vertices.insert(std::make_pair(temp,data));
 }
 
@@ -310,7 +310,7 @@ void MainInterface::finalize_line()
 {
     std::cout <<"drawing line"<<std::endl;
     std::shared_ptr<Logical_Edge> l_edge_ptr;
-    l_edge_ptr.reset(new Logical_Edge((vertices.at(starting_object))->name,(vertices.at(arrival_object))->name,from_port,to_port));
+    l_edge_ptr.reset(new Logical_Edge(*((vertices.at(starting_object))->name.get()),*((vertices.at(arrival_object))->name.get()),from_port,to_port));
     if (edges_set.find(l_edge_ptr->get_string())==edges_set.end())
     {
         edges_set.insert(l_edge_ptr->get_string());
@@ -433,14 +433,24 @@ if (selected_edge.use_count() != 0)
         selected_edge.reset();
     }
     std::cout<<"layer 3 press event triggered"<<std::endl;
-    l4.reset(new l4_popup());
-    l4->set_names(names);
+    tab_pop.reset(new Tab_popup());
+    std::shared_ptr<Logical_Vertex> vtx;
+    vtx.reset(new Logical_Vertex());
+    
+    std::shared_ptr< std::string > comp_name;
+    std::shared_ptr< std::map< int, Port > > ports;
+    
+    comp_name.reset(new std::string(""));
+    ports.reset(new std::map< int, Port>());
+    vtx->create_L4_component(comp_name,0,0,ports);
+    tab_pop->set_data(RESOURCE,vtx,names);
+    //l4->set_names(names);
        std::cout<<"layer 3 press event popup creation"<<std::endl;  
-    connect(l4.get(),SIGNAL(accepted()),this,SLOT(create_L4_obj()));
-    connect(l4.get(),SIGNAL(rejected()),this,SLOT(no_data()));
+    connect(tab_pop.get(),SIGNAL(accepted()),this,SLOT(create_L4_obj()));
+    connect(tab_pop.get(),SIGNAL(rejected()),this,SLOT(no_data()));
        std::cout<<"layer 3 press event popup connection"<<std::endl;
-    l4->exec();
-    l4->activateWindow();
+    tab_pop->exec();
+    tab_pop->activateWindow();
   
     std::cout<<"layer 3 press event popup execution"<<std::endl;
 }

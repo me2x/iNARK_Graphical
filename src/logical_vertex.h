@@ -20,21 +20,25 @@ struct Port
     int associate_id;
     int priority;    
 };
-
+/*
+ The logic behind the pointer or not is the following: common fields between opts have to use the pointer in order
+ to have the same object referred by all the internal components, if one modifies, all get the modification.
+ The fields that change in every option are normal attributes. if the option gets deleted, this info is no more needed.
+ */
 class Logical_Vertex
 {
 public:
     std::vector<std::shared_ptr<Vertex_Virtual> > components_opt;
-    std::string name;
+    std::shared_ptr<std::string> name;
     Layer layer;
     void print (std::ostream& comp_stream, std::ostream& opt_stream);
-    void create_L1_component(std::string name);
-    void create_L2_component(std::string name);
-    void create_L3_component(std::string name, int scheduler_type, std::map<int, int> slots);
-    void create_L4_component(std::string name, int scheduler_type, int component_type, std::map<int, Port> ports);
-    void create_L5_component(std::string name);
-    void add_L3_opt(int scheduler_type, std::map<int, int> slots);
-    void add_L4_opt(int scheduler_type, int component_type, std::map<int, Port> ports);
+    void create_L1_component(std::shared_ptr<std::string> name);
+    void create_L2_component(std::shared_ptr<std::string> name);
+    void create_L3_component(std::shared_ptr<std::string> name, int scheduler_type, std::shared_ptr<std::map<int, int>> slots);
+    void create_L4_component(std::shared_ptr<std::string> name, int scheduler_type, int component_type, std::shared_ptr<std::map<int, Port>> ports);
+    void create_L5_component(std::shared_ptr<std::string> name);
+    void add_L3_opt(int scheduler_type);
+    void add_L4_opt(int scheduler_type, int component_type);
 };
 
 
@@ -51,14 +55,14 @@ public:
 class L3_Vertex : public Vertex_Virtual
 {
 public:
-    std::map < int, int > OS_slots; //id and priority //the slots name is a QT define so it cant be used.
+    std::shared_ptr<std::map < int, int >> OS_slots; //id and priority //the slots name is a QT define so it cant be used.
     int scheduler_type;
     void print(std::ostream& out_stream);
 };
 class L4_Vertex : public Vertex_Virtual
 {
 public:
-    std::map < int, Port >ports; //id is key, other values ar in the struct
+    std::shared_ptr<std::map < int, Port >>ports; //id is key, other values ar in the struct
     int scheduler_type;
     int component_type;
     void print(std::ostream& out_stream);

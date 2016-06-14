@@ -6,8 +6,8 @@ l3_popup::l3_popup(QDialog* parent): QDialog(parent), ui(new Ui::l3_popup)
     ui->setupUi(this);
     connect(ui->ok, SIGNAL(clicked()), this, SLOT(accept()));
     connect(ui->cancel, SIGNAL(clicked()), this, SLOT(reject()));
-    data.reset(new Logical_Vertex());
-    data->name = "";
+  //  data.reset(new Logical_Vertex());
+    //data->name = "";
 }
 
 l3_popup::~l3_popup()
@@ -22,7 +22,7 @@ void l3_popup::exec()
 
 void l3_popup::accept()
 {
-    QString text = ui->lineEdit_2->text();
+    /*QString text = ui->lineEdit_2->text();
     std::map<int, int> slot_map;
     data->name = text.toStdString();
     //TODO controllo name non sia gia in uso
@@ -37,7 +37,7 @@ void l3_popup::accept()
         std::cout <<"name refused"<<std::endl;
         QDialog::reject();
         
-    }
+    }*/
 }
 std::shared_ptr<Logical_Vertex> l3_popup::get_data()
 {

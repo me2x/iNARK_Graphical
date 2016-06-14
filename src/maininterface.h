@@ -15,6 +15,7 @@
 #include "popups/l3_popup.h"
 #include "popups/l4_popup.h"
 #include "popups/l5_popup.h"
+#include "popups/tab_popup.h"
 #include <set>
 #include "popups/ports_popup.h"
 
@@ -119,6 +120,7 @@ private:
     std::shared_ptr<l4_popup> l4;
     std::shared_ptr<l5_popup> l5;
     std::shared_ptr<Ports_Popup> ports;
+    std::shared_ptr<Tab_popup> tab_pop;
     //utilities
     bool is_drawing;
     std::shared_ptr<std::set <std::string> > names;
