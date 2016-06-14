@@ -10,6 +10,7 @@ Tab_popup::Tab_popup(QDialog* parent): QDialog(parent), ui(new Ui::Tab_popup)
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected()));
     connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(add_tab()));
     connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(remove_tab()));
+    previous_tab = 0;
 }
 
 Tab_popup::~Tab_popup()
@@ -50,6 +51,13 @@ void Tab_popup::add_tab()
         }
         case RESOURCE:
         {
+            if (ui->tabWidget->count() > 0)
+            {
+                QWidget* wp = ui->tabWidget->widget(ui->tabWidget->currentIndex());
+                l4_popup *l4_obj = qobject_cast<l4_popup*>(wp);
+                if (l4_obj->get_data() != nullptr)
+                    l4_obj->consolidate_data();
+            }    
             ui->tabWidget->insertTab(ui->tabWidget->count(), new l4_popup(),QIcon(QString("")),"new tab");
             std::shared_ptr<L4_Vertex> new_vtx;
             new_vtx.reset(new L4_Vertex());
@@ -57,9 +65,10 @@ void Tab_popup::add_tab()
             std::shared_ptr<L4_Vertex> tmp = std::static_pointer_cast<L4_Vertex>(vtx_ptr->components_opt.at(0));
             new_vtx->ports = tmp->ports;
             
-            QWidget* wp = ui->tabWidget->widget(ui->tabWidget->count()-1);
-            l4_popup *l4_obj = qobject_cast<l4_popup*>(wp);
-            l4_obj->set_data(new_vtx);
+            QWidget* wp2 = ui->tabWidget->widget(ui->tabWidget->count()-1);
+            previous_tab = ui->tabWidget->count()-1;
+            l4_popup* l4_obj2 = qobject_cast<l4_popup*>(wp2);
+            l4_obj2->set_data(new_vtx);
             break;
         }
         case PHYSICAL:
@@ -107,12 +116,19 @@ void Tab_popup::tabSelected(){
     //then show the tab
     //use ui->tabWidget->currentIndex() to get the index of the new one and
     //create an integer in order to trace the previous tab open.
-    std::cout << "tabpopup tab selected event"<< ui->tabWidget->currentIndex() <<std::endl;
+    std::cout << "tabpopup tab selected event"<< ui->tabWidget->currentIndex()<<"and prebious is" << previous_tab <<std::endl;
     switch (lay)
     {
         case RESOURCE:
         {
-            
+            QWidget* wp = ui->tabWidget->widget(previous_tab);
+            l4_popup *l4_obj = qobject_cast<l4_popup*>(wp);
+            if (l4_obj->get_data() != nullptr)
+                l4_obj->consolidate_data();
+            wp = ui->tabWidget->widget(ui->tabWidget->currentIndex());
+            l4_obj = qobject_cast< l4_popup* >(wp);
+            if (l4_obj->get_data() != nullptr)
+                l4_obj->update_graphic_from_data();
             break;   
         }
         default:
@@ -121,4 +137,5 @@ void Tab_popup::tabSelected(){
             break;
         }
     }
+    previous_tab = ui->tabWidget->currentIndex();
 }

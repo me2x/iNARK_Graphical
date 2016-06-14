@@ -18,7 +18,9 @@ public:
     explicit l4_popup(QWidget* parent = 0);
     ~l4_popup();
     std::shared_ptr<L4_Vertex> get_data();
+    void consolidate_data();
     void set_data(std::shared_ptr<L4_Vertex> data_in);
+    void update_graphic_from_data();
     
 public slots:
     void add_table_line();

@@ -107,12 +107,20 @@ void l4_popup::exec()
     QWidget::exec();
 }
 */
-std::shared_ptr< L4_Vertex > l4_popup::get_data()
+
+void l4_popup::consolidate_data()
 {
-    //TODO save modification to the table in the data structure.
-    data->ports->clear(); //this let me avoid selective removal of table lines, just clear and recreate the internal fields
-     for (int i = 0; i< ui->tableWidget->rowCount();i++)
+    std::cout<<"consolidate data enter"<<std::endl;
+    std::cout<< ui->tableWidget <<std::endl;
+    if(data->ports->size()!=0)
     {
+        data->ports->clear(); //this let me avoid selective removal of table lines, just clear and recreate the internal fields
+        std::cout<<"consolidate data size check in"<<std::endl;    
+    }
+    
+    for (int i = 0; i< ui->tableWidget->rowCount();i++)
+    {
+        std::cout<<"consolidate data loop enter"<<std::endl;
         Port port;
         QSpinBox *id = qobject_cast<QSpinBox*>(ui->tableWidget->cellWidget(i,0));
         //TODO check != 0
@@ -128,6 +136,11 @@ std::shared_ptr< L4_Vertex > l4_popup::get_data()
         //data->ports->find(id_port) != data->ports->end? data->ports->at(id_port) = port : 
         data->ports->insert(std::make_pair(id_port,port));
     }
+
+}
+
+std::shared_ptr< L4_Vertex > l4_popup::get_data()
+{
     return data;
 }
 
@@ -135,7 +148,13 @@ void l4_popup::set_data(std::shared_ptr< L4_Vertex > data_in)
 {
     data = data_in;
     //ui->lineEdit_2->setText(QString::fromStdString(data->name));
-    
+    update_graphic_from_data();
+}
+
+void l4_popup::update_graphic_from_data()
+{
+    std::cout<<data->ports->size()<<std::endl;
+    ui->tableWidget->setRowCount(0);
     for (std::map<int,Port>::iterator it = data->ports->begin();it != data->ports->end();++it)
     {
     ui->tableWidget->insertRow(ui->tableWidget->rowCount());
