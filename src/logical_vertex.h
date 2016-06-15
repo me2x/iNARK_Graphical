@@ -34,11 +34,12 @@ public:
     void print (std::ostream& comp_stream, std::ostream& opt_stream);
     void create_L1_component(std::shared_ptr<std::string> name);
     void create_L2_component(std::shared_ptr<std::string> name);
-    void create_L3_component(std::shared_ptr<std::string> name, int scheduler_type, std::shared_ptr<std::map<int, int>> slots);
+    void create_L3_component(std::shared_ptr< std::string > comp_name, int scheduler_type, std::shared_ptr< std::map< int, int > > sched_slot);
     void create_L4_component(std::shared_ptr<std::string> name, int scheduler_type, int component_type, std::shared_ptr<std::map<int, Port>> ports);
     void create_L5_component(std::shared_ptr<std::string> name);
     void add_L3_opt(int scheduler_type);
     void add_L4_opt(int scheduler_type, int component_type);
+   
 };
 
 

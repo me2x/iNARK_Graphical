@@ -57,11 +57,7 @@ public slots:
     void start_update_L4_object();
     void start_update_L5_object();
     //called on popup->accepted()
-    void finalize_update_L1_object();
-    void finalize_update_L2_object();
-    void finalize_update_L3_object();
-    void finalize_update_L4_object();
-    void finalize_update_L5_object();
+    void finalize_update();
     
     // called from click on the component. needed to draw line, and cancel components
     void component_clicked();
@@ -94,6 +90,10 @@ public slots:
     void save_file();
     
 private:
+    void create_object(Layer l);
+    void update_object(Layer l);
+    void create_button_press(Layer l);
+    
     //draw the line having all the data in local variables
     void finalize_line();
     //in order to eliminate both the item and the graphical item the scene has to be updated before the reset of the shared_ptr

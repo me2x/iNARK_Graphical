@@ -10,7 +10,7 @@ l4_popup::l4_popup(QWidget* parent): QWidget(parent), ui(new Ui::l4_popup)
     ui->setupUi(this);
     connect(ui->add,SIGNAL(clicked()),this,SLOT(add_table_line()));
     connect(ui->remove,SIGNAL(clicked()),this,SLOT(remove_table_line()));
-     for (int i = 0; i< Component_Type::TYPE_SIZE;i++)
+    for (int i = 0; i< Component_Type::TYPE_SIZE;i++)
         ui->chose_layer->insertItem(i, QString::fromStdString(commons::get_component_type_name(static_cast<Component_Type>(i))));
     for (int i = 0; i< Component_Priority_Category::HANDLING_SIZE; i++)
         ui->chose_layer_2->insertItem(i, QString::fromStdString(commons::get_component_priority_type(static_cast<Component_Priority_Category>(i))));
@@ -27,11 +27,11 @@ l4_popup::l4_popup(QWidget* parent): QWidget(parent), ui(new Ui::l4_popup)
 void l4_popup::add_table_line()
 {
     ui->tableWidget->insertRow(ui->tableWidget->rowCount());
-    QComboBox* settingA = new QComboBox();
+    /*QComboBox* settingA = new QComboBox();
     settingA->addItem("100");
     settingA->addItem("200");
     ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 1, settingA );
-    
+    */
     QComboBox* settingB = new QComboBox();
     settingB->addItem("True");
     settingB->addItem("False");
@@ -43,6 +43,9 @@ void l4_popup::add_table_line()
     QSpinBox* spin2 = new QSpinBox();
     ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 2, spin2 );
    
+    QSpinBox* spin3 = new QSpinBox();
+    ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 1, spin3 );
+  
     /* getter
      QComboBox *myCB = qobject_cast<QComboBox*>(ui->tableWidget_4->cellWidget(0,0));
      InputComboData << myCB->currentText();
@@ -54,59 +57,10 @@ void l4_popup::remove_table_line()
     ui->tableWidget->removeRow(ui->tableWidget->rowCount()-1);
 }
 
-
-/*void l4_popup::accept()
-{
-    std::map<int,Port> ports_map;
-     for (int i = 0; i< ui->tableWidget->rowCount();i++)
-    {
-        Port port;
-        QSpinBox *id = qobject_cast<QSpinBox*>(ui->tableWidget->cellWidget(i,0));
-        //TODO check != 0
-        int id_port = id->value();
-        QComboBox *priority = qobject_cast<QComboBox*>(ui->tableWidget->cellWidget(i,1));
-        port.priority = priority->currentText().toInt();
-        
-        QSpinBox *ass_id = qobject_cast<QSpinBox*>(ui->tableWidget->cellWidget(i,2));
-        port.associate_id = ass_id->value();
-        QComboBox *isMaster = qobject_cast<QComboBox*>(ui->tableWidget->cellWidget(i,3));
-        port.isMaster = isMaster->currentText()=="True"?true:false;
-        
-        ports_map.insert(std::make_pair(id_port,port));
-    }
-    QString text = ui->lineEdit_2->text();
-    data->name = text.toStdString();
-    //TODO controllo name non sia gia in uso
-    
-    if (names->count(data->name) == 0 && data->name != ""){
-        data->create_L4_component(data->name,1,1,ports_map);
-        std::cout <<"name accepted"<<std::endl;
-        QWidget::accept();
-    }
-    else 
-    {
-        std::cout <<"name refused"<<std::endl;
-        QWidget::reject();
-        
-    }
-   
-}*/
 l4_popup::~l4_popup(){
     delete ui;
     data.reset();
 }
-/*
-void l4_popup::reject()
-{
-    std::cout <<"refuse button"<<std::endl;
-    QWidget::reject();
-}
-
-void l4_popup::exec()
-{
-    QWidget::exec();
-}
-*/
 
 void l4_popup::consolidate_data()
 {
@@ -125,8 +79,8 @@ void l4_popup::consolidate_data()
         QSpinBox *id = qobject_cast<QSpinBox*>(ui->tableWidget->cellWidget(i,0));
         //TODO check != 0
         int id_port = id->value();
-        QComboBox *priority = qobject_cast<QComboBox*>(ui->tableWidget->cellWidget(i,1));
-        port.priority = priority->currentText().toInt();
+        QSpinBox *priority = qobject_cast<QSpinBox*>(ui->tableWidget->cellWidget(i,1));
+        port.priority = priority->value();
         
         QSpinBox *ass_id = qobject_cast<QSpinBox*>(ui->tableWidget->cellWidget(i,2));
         port.associate_id = ass_id->value();
@@ -136,7 +90,7 @@ void l4_popup::consolidate_data()
         //data->ports->find(id_port) != data->ports->end? data->ports->at(id_port) = port : 
         data->ports->insert(std::make_pair(id_port,port));
     }
-
+    //get the other data.
 }
 
 std::shared_ptr< L4_Vertex > l4_popup::get_data()
@@ -158,12 +112,12 @@ void l4_popup::update_graphic_from_data()
     for (std::map<int,Port>::iterator it = data->ports->begin();it != data->ports->end();++it)
     {
     ui->tableWidget->insertRow(ui->tableWidget->rowCount());
-    QComboBox* settingA = new QComboBox();
+   /* QComboBox* settingA = new QComboBox();
     settingA->addItem("100");
     settingA->addItem("200");
     settingA->setCurrentIndex((*it).second.priority == 100 ? 0 : 1);
     ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 1, settingA );
-    
+    */
     QComboBox* settingB = new QComboBox();
     settingB->addItem("True");
     settingB->addItem("False");
@@ -178,5 +132,9 @@ void l4_popup::update_graphic_from_data()
     spin2->setValue((*it).second.associate_id);
     ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 2, spin2 );
    
+    QSpinBox* spin3 = new QSpinBox();
+    spin3->setValue((*it).second.priority);
+    ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 1, spin3 );
+  
     }
 }

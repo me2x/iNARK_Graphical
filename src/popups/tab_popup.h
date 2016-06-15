@@ -19,7 +19,8 @@ public:
     explicit Tab_popup(QDialog* parent = 0);
     ~Tab_popup();
     void exec();
-    void set_data(Layer l, std::shared_ptr<Logical_Vertex> vtx, std::shared_ptr<std::set <std::string> > names);
+    void set_data(Layer l, std::shared_ptr<Logical_Vertex> vtx, std::shared_ptr<std::set <std::string> > names,bool isUpdateParam);
+    std::shared_ptr<Logical_Vertex> get_data();
 public slots:
     void accept();
     void reject();
@@ -34,6 +35,7 @@ private:
     std::shared_ptr<Vertex_Virtual> virtual_vtx_ptr;
     std::shared_ptr<std::set <std::string> > names;
     int previous_tab;
+    bool isUpdate;
 };
 
 #endif // TAB_POPUP_H

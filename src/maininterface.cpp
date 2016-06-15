@@ -209,9 +209,13 @@ void MainInterface::component_clicked()
                 is_drawing = false;
                 scene->removeItem(current_line_item);
                 arrival_object = item;
-                std::cout<<"test: precall di portselect"<<std::endl;
+                std::cout<<"test: precall di portselect start is: "<<
+                commons::Layer_to_String(vertices.at(starting_object)->layer)<<
+                "while target is: "<<
+                commons::Layer_to_String(vertices.at(arrival_object)->layer)<<
+                std::endl;
                 if (((vertices.at(starting_object))->layer == Layer::RESOURCE && (vertices.at(arrival_object))->layer == Layer::RESOURCE ) ||
-                    ((vertices.at(starting_object))->layer == Layer::TASK && (vertices.at(starting_object))->layer == Layer::CONTROLLER))  
+                    ((vertices.at(starting_object))->layer == Layer::TASK && (vertices.at(arrival_object))->layer == Layer::CONTROLLER))  
                 {
                     //make popup and show
                     ports.reset(new Ports_Popup());
@@ -250,38 +254,24 @@ void MainInterface::component_clicked()
 
 void MainInterface::create_L1_obj()
 {
-     std::shared_ptr<Logical_Vertex> data = l1->get_data();
-     Graphic_Vertex* temp= new Graphic_Vertex(); //IMPORTANT: when removed from scene has to be freed
-     temp->setLayer(0);
-     scene->addItem(temp);
-     connect(temp,SIGNAL(riquadroCliccatoSx()),this,SLOT(component_clicked()));
-     connect(temp,SIGNAL(riquadroMosso()),this,SLOT(break_line_drawing()));
-     connect(temp,SIGNAL(riquadroCliccatoDx()),this,SLOT(break_line_drawing()));
-     connect(temp,SIGNAL(riquadroDoubleClick()),this,SLOT(start_update_L1_object()));
-     temp->text->setPlainText(QString::fromStdString(*(data->name)));
-     vertices.insert(std::make_pair(temp,data));
+create_object(FUNCTION);
 }
-
 void MainInterface::create_L2_obj()
 {
-
+create_object(TASK);
 }
-
 void MainInterface::create_L3_obj()
 {
-
+create_object(CONTROLLER);
 }
-
 void MainInterface::create_L4_obj()
 {
-
+create_object(RESOURCE);
 }
-
 void MainInterface::create_L5_obj()
 {
-
+create_object(PHYSICAL);
 }
-
 void MainInterface::delete_items()
 {    
     if (selected_edge.use_count() != 0)
@@ -340,141 +330,26 @@ void MainInterface::finalize_line()
     std::cout << "arrival object is: "<<arrival_object<<std::endl;
 }
 
-void MainInterface::finalize_update_L1_object()
-{
-
-}
-
-void MainInterface::finalize_update_L2_object()
-{
-
-}
-
-void MainInterface::finalize_update_L3_object()
-{
-
-}
-
-void MainInterface::finalize_update_L4_object()
-{
-
-}
-
-void MainInterface::finalize_update_L5_object()
-{
-
-}
-
 void MainInterface::Layer_1_press_event()
 {
-    if (selected_edge.use_count() != 0)
-    {
-        selected_edge->line->setPen(QPen(Qt::black));
-        selected_edge.reset();
-    }
-    std::cout<<"layer 1 press event triggered"<<std::endl;
-    l1.reset(new L1_popup());
-    l1->set_names(names);
-       std::cout<<"layer 1 press event popup creation"<<std::endl;  
-    connect(l1.get(),SIGNAL(accepted()),this,SLOT(create_L1_obj()));
-    connect(l1.get(),SIGNAL(rejected()),this,SLOT(no_data()));
-       std::cout<<"layer 1 press event popup connection"<<std::endl;
-    l1->exec();
-    l1->activateWindow();
-  
-    std::cout<<"layer 1 press event popup execution"<<std::endl;
+create_button_press(FUNCTION);
 }
-
 void MainInterface::Layer_2_press_event()
 {
-if (selected_edge.use_count() != 0)
-    {
-        selected_edge->line->setPen(QPen(Qt::black));
-        selected_edge.reset();
-    }
-    std::cout<<"layer 2 press event triggered"<<std::endl;
-    l2.reset(new l2_popup());
-    l2->set_names(names);
-       std::cout<<"layer 2 press event popup creation"<<std::endl;  
-    connect(l2.get(),SIGNAL(accepted()),this,SLOT(create_L2_obj()));
-    connect(l2.get(),SIGNAL(rejected()),this,SLOT(no_data()));
-       std::cout<<"layer 2 press event popup connection"<<std::endl;
-    l2->exec();
-    l2->activateWindow();
-  
-    std::cout<<"layer 2 press event popup execution"<<std::endl;
+create_button_press(TASK);
 }
-
 void MainInterface::Layer_3_press_event()
 {
-if (selected_edge.use_count() != 0)
-    {
-        selected_edge->line->setPen(QPen(Qt::black));
-        selected_edge.reset();
-    }
-    std::cout<<"layer 3 press event triggered"<<std::endl;
-    l3.reset(new l3_popup());
-    l3->set_names(names);
-       std::cout<<"layer 3 press event popup creation"<<std::endl;  
-    connect(l3.get(),SIGNAL(accepted()),this,SLOT(create_L3_obj()));
-    connect(l3.get(),SIGNAL(rejected()),this,SLOT(no_data()));
-       std::cout<<"layer 3 press event popup connection"<<std::endl;
-    l3->exec();
-    l3->activateWindow();
-  
-    std::cout<<"layer 3 press event popup execution"<<std::endl;
+create_button_press(CONTROLLER);
 }
-
 void MainInterface::Layer_4_press_event()
 {
-if (selected_edge.use_count() != 0)
-    {
-        selected_edge->line->setPen(QPen(Qt::black));
-        selected_edge.reset();
-    }
-    std::cout<<"layer 3 press event triggered"<<std::endl;
-    tab_pop.reset(new Tab_popup());
-    std::shared_ptr<Logical_Vertex> vtx;
-    vtx.reset(new Logical_Vertex());
-    
-    std::shared_ptr< std::string > comp_name;
-    std::shared_ptr< std::map< int, Port > > ports;
-    
-    comp_name.reset(new std::string(""));
-    ports.reset(new std::map< int, Port>());
-    vtx->create_L4_component(comp_name,0,0,ports);
-    tab_pop->set_data(RESOURCE,vtx,names);
-    //l4->set_names(names);
-       std::cout<<"layer 3 press event popup creation"<<std::endl;  
-    connect(tab_pop.get(),SIGNAL(accepted()),this,SLOT(create_L4_obj()));
-    connect(tab_pop.get(),SIGNAL(rejected()),this,SLOT(no_data()));
-       std::cout<<"layer 3 press event popup connection"<<std::endl;
-    tab_pop->exec();
-    tab_pop->activateWindow();
-  
-    std::cout<<"layer 3 press event popup execution"<<std::endl;
+create_button_press(RESOURCE);
 }
-
 void MainInterface::Layer_5_press_event()
 {
-if (selected_edge.use_count() != 0)
-    {
-        selected_edge->line->setPen(QPen(Qt::black));
-        selected_edge.reset();
-    }
-    std::cout<<"layer 3 press event triggered"<<std::endl;
-    l5.reset(new l5_popup());
-    l5->set_names(names);
-       std::cout<<"layer 3 press event popup creation"<<std::endl;  
-    connect(l5.get(),SIGNAL(accepted()),this,SLOT(create_L5_obj()));
-    connect(l5.get(),SIGNAL(rejected()),this,SLOT(no_data()));
-       std::cout<<"layer 3 press event popup connection"<<std::endl;
-    l5->exec();
-    l5->activateWindow();
-  
-    std::cout<<"layer 3 press event popup execution"<<std::endl;
+create_button_press(PHYSICAL);
 }
-
 void MainInterface::mousePressEvent(QMouseEvent* e)
 {
         std::cout << "widget mouse press catched" << std::endl;
@@ -515,12 +390,10 @@ void MainInterface::mousePressEvent(QMouseEvent* e)
     }
     //QWidget::mousePressEvent(e);
 }
-
 void MainInterface::no_data()
 {
 
 }
-
 void MainInterface::redraw_line()
 {
     if (!is_drawing) return;
@@ -537,7 +410,6 @@ void MainInterface::redraw_line()
     current_line_item =  scene->addLine(newline,blackpen);
        
 }
-
 void MainInterface::start_search()
 {
     //get nodes names
@@ -553,29 +425,162 @@ void MainInterface::start_search()
     */
     
 }
-
 void MainInterface::start_update_L1_object()
 {
-    std::cout<<"updating l1"<<std::endl;
-    l1->activateWindow();
+    update_object(FUNCTION);
 }
-
 void MainInterface::start_update_L2_object()
 {
-
+    update_object(TASK);
 }
-
 void MainInterface::start_update_L3_object()
 {
-
+    update_object(CONTROLLER);
 }
-
 void MainInterface::start_update_L4_object()
 {
-
+    update_object(RESOURCE);
 }
-
 void MainInterface::start_update_L5_object()
 {
-
+    update_object(PHYSICAL);
+}
+void MainInterface::create_object(Layer l)
+{
+    std::shared_ptr<Logical_Vertex> data = tab_pop->get_data();
+    Graphic_Vertex* temp= new Graphic_Vertex(); //IMPORTANT: when removed from scene has to be freed
+    temp->setLayer(commons::Layer_to_int(l)-1);
+    scene->addItem(temp);
+    connect(temp,SIGNAL(riquadroCliccatoSx()),this,SLOT(component_clicked()));
+    connect(temp,SIGNAL(riquadroMosso()),this,SLOT(break_line_drawing()));
+    connect(temp,SIGNAL(riquadroCliccatoDx()),this,SLOT(break_line_drawing()));
+     switch (l)
+    {
+       case FUNCTION:
+            {
+                connect(temp,SIGNAL(riquadroDoubleClick()),this,SLOT(start_update_L1_object()));
+                break;
+            }
+            case TASK:
+            {
+                connect(temp,SIGNAL(riquadroDoubleClick()),this,SLOT(start_update_L2_object()));
+                break;
+            }
+            case CONTROLLER:
+            {
+                connect(temp,SIGNAL(riquadroDoubleClick()),this,SLOT(start_update_L3_object()));
+                break;
+            }
+            case RESOURCE:
+            {
+                connect(temp,SIGNAL(riquadroDoubleClick()),this,SLOT(start_update_L4_object()));
+                break;
+            }
+            case PHYSICAL:
+            {
+                connect(temp,SIGNAL(riquadroDoubleClick()),this,SLOT(start_update_L5_object()));
+                break;
+            }
+            default:
+            {
+                throw std::runtime_error("create object called without layer set");
+                break;
+            } 
+    }
+    temp->text->setPlainText(QString::fromStdString(*(data->name)));
+    vertices.insert(std::make_pair(temp,data));
+}
+void MainInterface::create_button_press(Layer l)
+{
+if (selected_edge.use_count() != 0)
+    {
+        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge.reset();
+    }
+    std::cout<<"layer 3 press event triggered"<<std::endl;
+    tab_pop.reset(new Tab_popup());
+    std::shared_ptr<Logical_Vertex> vtx;
+    vtx.reset(new Logical_Vertex());
+    
+    std::shared_ptr< std::string > comp_name;
+    comp_name.reset(new std::string(""));
+    switch (l)
+    {
+       case FUNCTION:
+            {
+                vtx->create_L1_component(comp_name);
+                tab_pop->set_data(PHYSICAL,vtx,names,false);
+                connect(tab_pop.get(),SIGNAL(accepted()),this,SLOT(create_L1_obj()));
+                break;
+            }
+            case TASK:
+            {
+                vtx->create_L2_component(comp_name);
+                tab_pop->set_data(PHYSICAL,vtx,names,false);
+                connect(tab_pop.get(),SIGNAL(accepted()),this,SLOT(create_L2_obj()));
+                break;
+            }
+            case CONTROLLER:
+            {
+                std::shared_ptr< std::map< int, int > > sched_slot;
+                sched_slot.reset(new std::map< int, int>());
+                vtx->create_L3_component(comp_name,0,sched_slot);
+                tab_pop->set_data(CONTROLLER,vtx,names,false);
+                connect(tab_pop.get(),SIGNAL(accepted()),this,SLOT(create_L3_obj()));
+                break;
+            }
+            case RESOURCE:
+            {
+                std::shared_ptr< std::map< int, Port > > ports;
+                ports.reset(new std::map< int, Port>());
+                vtx->create_L4_component(comp_name,0,0,ports);
+                tab_pop->set_data(RESOURCE,vtx,names,false);
+                connect(tab_pop.get(),SIGNAL(accepted()),this,SLOT(create_L4_obj()));
+                break;
+            }
+            case PHYSICAL:
+            {
+                vtx->create_L5_component(comp_name);
+                tab_pop->set_data(PHYSICAL,vtx,names,false);
+                connect(tab_pop.get(),SIGNAL(accepted()),this,SLOT(create_L5_obj()));
+                break;
+            }
+            default:
+            {
+                throw std::runtime_error("create object called without layer set");
+                break;
+            } 
+    }
+    connect(tab_pop.get(),SIGNAL(rejected()),this,SLOT(no_data()));
+    std::cout<<"layer 3 press event popup connection"<<std::endl;
+    tab_pop->exec();
+    tab_pop->activateWindow();
+  
+    std::cout<<"layer 3 press event popup execution"<<std::endl;
+}
+void MainInterface::finalize_update()
+{
+    //only graphical things, logical are done on the tab_pop->accept
+    starting_object->text->setPlainText(QString::fromStdString(*(tab_pop->get_data()->name)));
+    starting_object = nullptr;
+}
+void MainInterface::update_object(Layer l)
+{
+if (selected_edge.use_count() != 0)
+    {
+        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge.reset();
+    }
+    
+    std::cout<<"update event called"<<std::endl;
+    tab_pop.reset(new Tab_popup());
+    tab_pop->set_data(l,vertices.at(starting_object),names,true);
+    scene->removeItem(current_line_item);
+    is_drawing = false;
+    connect(tab_pop.get(),SIGNAL(accepted()),this,SLOT(finalize_update()));
+    connect(tab_pop.get(),SIGNAL(rejected()),this,SLOT(no_data()));
+    tab_pop->exec();
+    tab_pop->activateWindow();
+  
+    std::cout<<"layer 4 update  event popup execution"<<std::endl;
 }

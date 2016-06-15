@@ -1,12 +1,13 @@
 #include "l3_popup.h"
 #include "ui_l3_popup.h"
-
-l3_popup::l3_popup(QDialog* parent): QDialog(parent), ui(new Ui::l3_popup)
+#include <QSpinBox>
+l3_popup::l3_popup(QWidget* parent): QWidget(parent), ui(new Ui::l3_popup)
 {
     ui->setupUi(this);
-    connect(ui->ok, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(ui->cancel, SIGNAL(clicked()), this, SLOT(reject()));
-  //  data.reset(new Logical_Vertex());
+    connect(ui->add,SIGNAL(clicked()),this,SLOT(add_table_line()));
+    connect(ui->remove,SIGNAL(clicked()),this,SLOT(remove_table_line()));
+  
+   //  data.reset(new Logical_Vertex());
     //data->name = "";
 }
 
@@ -15,44 +16,67 @@ l3_popup::~l3_popup()
     delete ui;
 }
 
-void l3_popup::exec()
-{
-    QDialog::exec();
-}
 
-void l3_popup::accept()
-{
-    /*QString text = ui->lineEdit_2->text();
-    std::map<int, int> slot_map;
-    data->name = text.toStdString();
-    //TODO controllo name non sia gia in uso
-    if (names->count(data->name) == 0 && data->name != ""){
-        std::cout <<"name accepted"<<std::endl;
-        data->create_L3_component(data->name,0,slot_map);
-        names->insert(data->name);
-        QDialog::accept();
-    }
-    else 
-    {
-        std::cout <<"name refused"<<std::endl;
-        QDialog::reject();
-        
-    }*/
-}
-std::shared_ptr<Logical_Vertex> l3_popup::get_data()
+std::shared_ptr<L3_Vertex> l3_popup::get_data()
 {
     return data;
 }
-void l3_popup::reject()
-{
-    QDialog::reject();
-}
-void l3_popup::set_data(std::shared_ptr<Logical_Vertex> data_in)
+void l3_popup::set_data(std::shared_ptr<L3_Vertex> data_in)
 {
     this->data = data_in;
+    update_graphic_from_data();
 }
-void l3_popup::set_names(std::shared_ptr<std::set <std::string> > names)
+
+void l3_popup::add_table_line()
 {
-    this->names = names;
+    ui->tableWidget->insertRow(ui->tableWidget->rowCount());
+      
+    QSpinBox* spin = new QSpinBox();
+    ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 0, spin );
+    
+    QSpinBox* spin2 = new QSpinBox();
+    ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 1, spin2 );
 }
+void l3_popup::remove_table_line()
+{
+    ui->tableWidget->removeRow(ui->tableWidget->rowCount()-1);
+    consolidate_data();
+}
+void l3_popup::consolidate_data()
+{
+    std::cout<<"consolidate data enter"<<std::endl;
+    std::cout<< ui->tableWidget <<std::endl;
+    if(data->OS_slots->size()!=0)
+    {
+        data->OS_slots->clear(); //this let me avoid selective removal of table lines, just clear and recreate the internal fields
+        std::cout<<"consolidate data size check in"<<std::endl;    
+    }
+    
+    for (int i = 0; i< ui->tableWidget->rowCount();i++)
+    {
+        std::cout<<"consolidate data loop enter"<<std::endl;
+        QSpinBox *id = qobject_cast<QSpinBox*>(ui->tableWidget->cellWidget(i,0));
+        QSpinBox *priority = qobject_cast<QSpinBox*>(ui->tableWidget->cellWidget(i,1));
+        data->OS_slots->insert(std::make_pair(id->value(),priority->value()));
+    }
+    //get the other data.
+}
+
+void l3_popup::update_graphic_from_data()
+{
+    std::cout<<data->OS_slots->size()<<std::endl;
+    ui->tableWidget->setRowCount(0);
+    for (std::map<int,int>::iterator it = data->OS_slots->begin();it != data->OS_slots->end();++it)
+    {
+    ui->tableWidget->insertRow(ui->tableWidget->rowCount());
+    QSpinBox* spin = new QSpinBox();
+    spin->setValue((*it).first);
+    ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 0, spin );
+    QSpinBox* spin3 = new QSpinBox();
+    spin3->setValue((*it).second);
+    ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 1, spin3 );
+  
+    }
+}
+
 

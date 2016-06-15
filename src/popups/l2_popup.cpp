@@ -4,9 +4,7 @@
 l2_popup::l2_popup(QDialog* parent): QDialog(parent), ui(new Ui::l2_popup)
 {
     ui->setupUi(this);
-    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(ui->pushButton_2, SIGNAL(clicked()), this, SLOT(reject()));
-    //data.reset(new Logical_Vertex());
+     //data.reset(new Logical_Vertex());
     //data->name = "";
 }
 

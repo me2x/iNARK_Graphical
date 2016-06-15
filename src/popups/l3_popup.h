@@ -2,7 +2,7 @@
 #define L3_POPUP_H
 
 #include "../logical_vertex.h"
-#include <QDialog>
+#include <QWidget>
 #include <memory>
 #include <set>
 
@@ -11,23 +11,23 @@ namespace Ui
 class l3_popup;
 }
 
-class l3_popup: public QDialog
+class l3_popup: public QWidget
 {
     Q_OBJECT
 public:
-    explicit l3_popup(QDialog* parent = 0);
+    explicit l3_popup(QWidget* parent = 0);
     ~l3_popup();
-    void exec();
-    std::shared_ptr<Logical_Vertex> get_data();
-    void set_data(std::shared_ptr<Logical_Vertex> data_in);
-    void set_names (std::shared_ptr<std::set <std::string> > names);
+    std::shared_ptr<L3_Vertex> get_data();
+    void set_data(std::shared_ptr<L3_Vertex> data_in);
+    void consolidate_data();
+    void update_graphic_from_data();
+
 public slots:
-    void accept();
-    void reject();
+    void add_table_line();
+    void remove_table_line();
 private:
     Ui::l3_popup* ui;
-    std::shared_ptr<Logical_Vertex> data;
-    std::shared_ptr<std::set<std::string> > names;
+    std::shared_ptr<L3_Vertex> data;
 };
 
 

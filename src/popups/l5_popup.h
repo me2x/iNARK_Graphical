@@ -3,8 +3,7 @@
 
 #include <memory>
 #include <string>
-#include <set>
-#include <QDialog>
+#include <QWidget>
 #include "../logical_vertex.h"
 
 namespace Ui
@@ -12,23 +11,21 @@ namespace Ui
 class l5_popup;
 }
 
-class l5_popup : public QDialog
+class l5_popup : public QWidget
 {
     Q_OBJECT
 public:
-    explicit l5_popup(QDialog* parent = 0);
+    explicit l5_popup(QWidget* parent = 0);
     ~l5_popup();
-    void exec();
-    std::shared_ptr<Logical_Vertex> get_data();
-    void set_data(std::shared_ptr<Logical_Vertex> data_in);
-    void set_names (std::shared_ptr<std::set <std::string> > names);
-public slots:
-    void accept();
-    void reject();
+    std::shared_ptr<L5_Vertex> get_data();
+    void set_data(std::shared_ptr<L5_Vertex> data_in);
+    // STUB only, never used as now since opt has no meaning (ui is empty here)
+    void consolidate_data();
+    void update_graphic_from_data();
+
 private:
     Ui::l5_popup* ui;
-    std::shared_ptr<Logical_Vertex> data;
-    std::shared_ptr<std::set<std::string> > names;
+    std::shared_ptr<L5_Vertex> data;
 };
 
 #endif // L5_POPUP_H
