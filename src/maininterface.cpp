@@ -45,6 +45,8 @@ MainInterface::MainInterface(QWidget* parent): QWidget(parent), ui(new Ui::MainI
     ui->graphicsView->setScene(scene);
     scene->setParent(ui->graphicsView);
     arrows.reset(new std::map<QGraphicsLineItem*,std::shared_ptr<Graphic_Edge> >);
+    from_port = NO_PORT;
+    to_port = NO_PORT;
     std::cout << "setup finished" <<std::endl;
 }
 
@@ -105,6 +107,32 @@ void MainInterface::delete_edge(std::shared_ptr< Graphic_Edge > to_be_deleted)
     //remove from edge_map
     std::string edge_string = (edges.at(to_be_deleted)).get()->get_string();
     edges_set.erase(edge_string);
+    // if ports remove from used_slot_and_ports
+    std::map< std::pair <std::string, int>, std::set<std::shared_ptr<Graphic_Edge>> >::iterator it = used_slot_and_ports.find(edges.at(to_be_deleted)->get_from());
+    if (it != used_slot_and_ports.end())
+    {
+        std::cout <<"used_slot_and_ports key found, erasing"<<(*it).second.size()<<std::endl;
+        (*it).second.erase(to_be_deleted);
+        if (it->second.size() == 1)
+        {
+            std::cout <<"used_slot_and_ports check passed, blackening"<<std::endl;
+            (*(*it).second.begin())->set_color(Graphic_Edge::BLACK);
+        }
+        else if (it->second.size() == 0)
+            used_slot_and_ports.erase(it);
+    }
+    
+    it = used_slot_and_ports.find(edges.at(to_be_deleted)->get_to());
+    if (it != used_slot_and_ports.end())
+    {
+        (*it).second.erase(to_be_deleted);
+        if (it->second.size() == 1)
+            (*(*it).second.begin())->set_color(Graphic_Edge::BLACK);
+        else if (it->second.size() == 0)
+            used_slot_and_ports.erase(it);
+    }
+    
+    
     // remove from the arrow map. graphical utility
     arrows->erase(to_be_deleted->line);
     //remove from the edges map. logical value
@@ -151,6 +179,7 @@ void MainInterface::delete_vertex(Graphic_Vertex* to_be_deleted)
 
 void MainInterface::break_line_drawing()
 {
+    std::cout<<"enter break line drawing"<<std::endl;
     if (!is_drawing) return;
     
     scene->removeItem(current_line_item);
@@ -165,7 +194,7 @@ void MainInterface::component_clicked()
 {
     if (selected_edge.use_count() != 0) 
     {
-        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge->reset_color();
         selected_edge.reset();
     }
     
@@ -229,8 +258,8 @@ void MainInterface::component_clicked()
                 }
                 else
                 {
-                    from_port = 0;
-                    to_port = 0;
+                    from_port = NO_PORT;
+                    to_port = NO_PORT;
                     finalize_line();
                 }
             }
@@ -294,25 +323,62 @@ void MainInterface::get_line_data_from_popup()
     std::pair<int, int> portspair =  ports->get_ports();
     from_port = portspair.first;
     to_port = portspair.second;
-    finalize_line();
+    if (from_port != NO_PORT && to_port != NO_PORT)
+        finalize_line();
+    else
+        break_line_drawing();
 }
 void MainInterface::finalize_line()
 {
     std::cout <<"drawing line"<<std::endl;
     std::shared_ptr<Logical_Edge> l_edge_ptr;
     l_edge_ptr.reset(new Logical_Edge(*((vertices.at(starting_object))->name.get()),*((vertices.at(arrival_object))->name.get()),from_port,to_port));
+    std::shared_ptr<Graphic_Edge> edge;
+    edge.reset(new Graphic_Edge()); //should not be an issue, all the insert are internal, and if not done the counter decrease at the exit and the object is freed
+    bool flag_is_inserted = false;
     if (edges_set.find(l_edge_ptr->get_string())==edges_set.end())
     {
         edges_set.insert(l_edge_ptr->get_string());
-        std::shared_ptr<Graphic_Edge> edge;
-        edge.reset(new Graphic_Edge());
         //insert in arrows done inside the function
         edge->set_data(starting_object,arrival_object,from_port,to_port,arrows,edge);
         std::cout <<"graph edge created"<<std::endl;
-        edges.insert(std::make_pair(edge,l_edge_ptr));
+        flag_is_inserted = edges.insert(std::make_pair(edge,l_edge_ptr)).second;
     }
     else
         std::cout<<"edge already exists"<<l_edge_ptr->get_string()<<std::endl;
+    
+    std::map<std::pair <std::string, int>,std::set<std::shared_ptr<Graphic_Edge>>>::iterator it = used_slot_and_ports.find(l_edge_ptr->get_from());
+    if (it != used_slot_and_ports.end() && flag_is_inserted)
+    {
+        if ((*it).second.size() == 1)
+            (*(*it).second.begin())->set_color(Graphic_Edge::BLUE);
+        edge->set_color(Graphic_Edge::BLUE);
+        used_slot_and_ports.at(it->first).insert(edge);
+     //doppio uso della porta from, colora i due archi partenti da li   ;
+    }
+    else if(from_port != NO_PORT && flag_is_inserted)
+    {
+        //crea set e inserisci arco.
+        std::set<std::shared_ptr<Graphic_Edge>> tmp_set;
+        tmp_set.insert(edge);
+        used_slot_and_ports.insert(std::make_pair(l_edge_ptr->get_from(),tmp_set));        
+    }
+    it = used_slot_and_ports.find(l_edge_ptr->get_to());
+    if (it != used_slot_and_ports.end() && flag_is_inserted)
+    {
+        if ((*it).second.size() == 1)
+            (*(*it).second.begin())->set_color(Graphic_Edge::BLUE);
+        edge->set_color(Graphic_Edge::BLUE);
+        used_slot_and_ports.at(it->first).insert(edge);
+     
+    }
+    else if(to_port != NO_PORT && flag_is_inserted)
+    {
+        std::set<std::shared_ptr<Graphic_Edge>> tmp_set;
+        tmp_set.insert(edge);
+        used_slot_and_ports.insert(std::make_pair(l_edge_ptr->get_to(),tmp_set));        
+    }
+    
     
     
     arrival_object->setSelected(false);
@@ -323,11 +389,15 @@ void MainInterface::finalize_line()
     starting_object = nullptr;
     if (selected_edge.use_count() != 0) 
     {
-        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge->reset_color();
         selected_edge.reset();
     }
     std::cout << "fine finalize line, item selected count is:" <<scene->selectedItems().count()<<std::endl;
     std::cout << "arrival object is: "<<arrival_object<<std::endl;
+    from_port = NO_PORT;
+    to_port = NO_PORT;
+    //ports.reset();
+    std::cout << "exit point from finalize line"<<std::endl;
 }
 
 void MainInterface::Layer_1_press_event()
@@ -359,7 +429,7 @@ void MainInterface::mousePressEvent(QMouseEvent* e)
         break_line_drawing();
         if (selected_edge.use_count()!=0)
         {
-            selected_edge->line->setPen(QPen(Qt::black));
+            selected_edge->reset_color();
             selected_edge.reset();
         }
     }
@@ -379,7 +449,7 @@ void MainInterface::mousePressEvent(QMouseEvent* e)
             {
                 if (selected_edge.use_count() != 0)
                 {
-                    selected_edge->line->setPen(QPen(Qt::black));
+                    selected_edge->reset_color();
                 }
                 selected_edge = arrows->at(item);
                 selected_edge->line->setPen(QPen(Qt::red)); 
@@ -494,7 +564,7 @@ void MainInterface::create_button_press(Layer l)
 {
 if (selected_edge.use_count() != 0)
     {
-        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge->reset_color();
         selected_edge.reset();
     }
     std::cout<<"layer 3 press event triggered"<<std::endl;
@@ -568,13 +638,20 @@ void MainInterface::update_object(Layer l)
 {
 if (selected_edge.use_count() != 0)
     {
-        selected_edge->line->setPen(QPen(Qt::black));
+        selected_edge->reset_color();
         selected_edge.reset();
     }
     
     std::cout<<"update event called"<<std::endl;
+    std::cout<<"update event called"<<starting_object<<std::endl;
     tab_pop.reset(new Tab_popup());
-    tab_pop->set_data(l,vertices.at(starting_object),names,true);
+    try{
+        tab_pop->set_data(l,vertices.at(starting_object),names,true);
+    }
+    catch (std::out_of_range e)
+    {
+        return;
+    }
     scene->removeItem(current_line_item);
     is_drawing = false;
     connect(tab_pop.get(),SIGNAL(accepted()),this,SLOT(finalize_update()));

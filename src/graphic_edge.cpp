@@ -33,11 +33,11 @@ void Graphic_Edge::set_data(Graphic_Vertex* from, Graphic_Vertex* to, int frompo
     line->setFlag(QGraphicsItem::ItemIsSelectable);
     label_start = new QGraphicsTextItem();
     label_start->setPos(starting_qpoint->x()-(newline.dx()/2), starting_qpoint->y()-newline.dy()+(2*newline.dy()/3)-5); //stessa y ottenuta cosi. 
-    label_start->setPlainText(fromport!=0? QString::number(fromport): "");
+    label_start->setPlainText(fromport!=NO_PORT? QString::number(fromport): "");
     arrival_point->scene()->addItem(label_start);
     label_stop = new QGraphicsTextItem();
     label_stop->setPos(arrival_qpoint->x()+(newline.dx()/2), arrival_qpoint->y()+(newline.dy()/3)-5);
-    label_stop->setPlainText(toport!=0? QString::number(toport): "");
+    label_stop->setPlainText(toport!=NO_PORT? QString::number(toport): "");
     arrival_point->scene()->addItem(label_stop);
     std::cout<< "arrow to be inserted"<<std::endl;
     std::cout << "sizw is: "<<arrows->size()<<std::endl;
@@ -48,6 +48,7 @@ void Graphic_Edge::set_data(Graphic_Vertex* from, Graphic_Vertex* to, int frompo
     std::cout<< "arrow created"<<std::endl;
     arrival_point->scene()->update();
     std::cout <<"scene is catched and its items are" <<arrival_point->scene()->items().size()<<std::endl;
+    color = BLACK;
 }
 
 void Graphic_Edge::update()
@@ -84,7 +85,7 @@ void Graphic_Edge::update()
     arrows->insert(std::make_pair(line, ptr));
     label_start->setPos(starting_qpoint->x()-newline.dx()+(2*newline.dx()/3), starting_qpoint->y()-newline.dy()+(2*newline.dy()/3)-5); //stessa y ottenuta cosi. 
     label_stop->setPos(arrival_qpoint->x()+(newline.dx()/3), arrival_qpoint->y()+(newline.dy()/3)-5);
-    
+    reset_color();
 }
 Graphic_Edge::~Graphic_Edge()
 {
@@ -100,4 +101,23 @@ Graphic_Edge::~Graphic_Edge()
 Graphic_Edge::Graphic_Edge()
 {
 
+}
+void Graphic_Edge::reset_color()
+{
+    switch (color)
+    {
+        case BLACK:
+            line->setPen(QPen(Qt::black));
+            break;
+        case BLUE:
+            line->setPen(QPen(Qt::blue));
+            break;
+        default:
+            throw std::runtime_error("unsupported color");
+    }
+}
+void Graphic_Edge::set_color(Graphic_Edge::iNARK_Colors c)
+{
+    color = c;
+    reset_color();
 }

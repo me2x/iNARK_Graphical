@@ -6,7 +6,9 @@ l3_popup::l3_popup(QWidget* parent): QWidget(parent), ui(new Ui::l3_popup)
     ui->setupUi(this);
     connect(ui->add,SIGNAL(clicked()),this,SLOT(add_table_line()));
     connect(ui->remove,SIGNAL(clicked()),this,SLOT(remove_table_line()));
-  
+    for (int i = 0; i< Component_Priority_Category::HANDLING_SIZE; i++)
+        ui->chose_layer->insertItem(i, QString::fromStdString(commons::get_component_priority_type(static_cast<Component_Priority_Category>(i))));
+
    //  data.reset(new Logical_Vertex());
     //data->name = "";
 }
@@ -60,6 +62,7 @@ void l3_popup::consolidate_data()
         data->OS_slots->insert(std::make_pair(id->value(),priority->value()));
     }
     //get the other data.
+      data->scheduler_type = ui->chose_layer->currentIndex();
 }
 
 void l3_popup::update_graphic_from_data()
@@ -77,6 +80,7 @@ void l3_popup::update_graphic_from_data()
     ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 1, spin3 );
   
     }
+    ui->chose_layer->setCurrentIndex(data->scheduler_type);
 }
 
 

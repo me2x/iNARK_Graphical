@@ -20,7 +20,8 @@ Ports_Popup::Ports_Popup(QDialog* parent): QDialog(parent), ui(new Ui::Ports_Pop
 }
 void Ports_Popup::set_data(std::shared_ptr<Logical_Vertex> from, std::shared_ptr<Logical_Vertex> to)
 {
-
+    isValid = true;
+    source = from;
     if (from->layer == RESOURCE) //dont need to check the target, they are already checked outside
     {
         std::shared_ptr<L4_Vertex> l4_ptr_from = std::static_pointer_cast<L4_Vertex>(from->components_opt.at(0));
@@ -51,6 +52,8 @@ void Ports_Popup::set_data(std::shared_ptr<Logical_Vertex> from, std::shared_ptr
                 buttons.push_back(radio_ptr);
             }
         }
+        if (bg->buttons().size() == 0 || bg2->buttons().size() == 0)
+            isValid=false;
     }
     else if (from->layer == TASK) //dont need to check the target, they are already checked outside
     {
@@ -64,6 +67,8 @@ void Ports_Popup::set_data(std::shared_ptr<Logical_Vertex> from, std::shared_ptr
             ui->frame_4->layout()->addWidget(radio_ptr);
             buttons.push_back(radio_ptr);
         }
+        if (bg2->buttons().size() == 0)
+            isValid=false;
     }
     ui->frame_3->update();
     ui->frame_4->update();
@@ -79,15 +84,15 @@ Ports_Popup::~Ports_Popup()
 }
 void Ports_Popup::accept()
 {
-    std::cout<<"checked sourc button: "<<(bg->buttons().size() != 0 ? (bg->checkedButton() != 0?bg->checkedButton()->text().toInt():-1): 0)<<std::endl;
-    std::cout<<"checked trgt button: "<<(bg2->buttons().size() != 0 ? (bg2->checkedButton() != 0?bg2->checkedButton()->text().toInt():-1): 0)<<std::endl;
-    
-    from = bg->buttons().size() != 0 ? (bg->checkedButton() != 0?bg->checkedButton()->text().toInt():-1): 0;
-    to = bg2->buttons().size() != 0 ? (bg2->checkedButton() != 0?bg2->checkedButton()->text().toInt():-1): 0;
-    if (to == -1 || from == -19)
+    //check on size is already been done.
+     if (!isValid || bg2->checkedButton() == 0 || (bg->checkedButton() == 0 && source->layer == TASK))
         QDialog::reject();
     else
+    {
+        from = bg->checkedButton()->text().toInt();
+        to =  bg2->checkedButton()->text().toInt();
         QDialog::accept();
+    }
 }
 void Ports_Popup::reject()
 {

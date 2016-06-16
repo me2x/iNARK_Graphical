@@ -91,6 +91,8 @@ void l4_popup::consolidate_data()
         data->ports->insert(std::make_pair(id_port,port));
     }
     //get the other data.
+    data->component_type = ui->chose_layer->currentIndex();
+    data->scheduler_type = ui->chose_layer_2->currentIndex();
 }
 
 std::shared_ptr< L4_Vertex > l4_popup::get_data()
@@ -137,4 +139,6 @@ void l4_popup::update_graphic_from_data()
     ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 1, spin3 );
   
     }
+    ui->chose_layer->setCurrentIndex(data->component_type);
+    ui->chose_layer_2->setCurrentIndex(data->scheduler_type);
 }

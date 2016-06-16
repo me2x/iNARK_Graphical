@@ -31,6 +31,7 @@ private:
     QButtonGroup* bg;
     QButtonGroup* bg2;
     std::list<QRadioButton*> buttons;
+    bool isValid;
 };
 
 #endif // PORTS_POPUP_H

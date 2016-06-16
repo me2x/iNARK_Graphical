@@ -1,14 +1,14 @@
 #include "logical_edge.h"
 #include <iostream>
 #include <boost/lexical_cast.hpp>
-
+#include "graphic_edge.h"
 void Logical_Edge::print(std::ostream& comp_stream)
 {
     comp_stream << "<edge>"<<std::endl<<" <from><name>"<<from<<"</name>";
-    if (from_port!=0)
+    if (from_port!=NO_PORT)
         comp_stream << "<port>"<<boost::lexical_cast<std::string>(from_port)<<"</port>";
     comp_stream << "</from>"<<std::endl<<"<to><name>"<<to<<"</name>";
-    if (to_port!=0)
+    if (to_port!=NO_PORT)
         comp_stream <<  "<port>"+boost::lexical_cast<std::string>(to)+"</port>";
     comp_stream <<"</to>"<<std::endl<<"</edge>"<<std::endl;
 }

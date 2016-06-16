@@ -124,7 +124,8 @@ private:
     //utilities
     bool is_drawing;
     std::shared_ptr<std::set <std::string> > names;
-    std::set< std::string > edges_set; //just save the from-to names and use for checking. the other structures will handle the print and so on. this is only an utility for ease the check.
+    std::set< std::string > edges_set; //just save the from-to names and use for checking. the other structures will handle the print and so on. this is only an utility to ease the check.
+    std::map< std::pair <std::string, int>, std::set<std::shared_ptr<Graphic_Edge>> > used_slot_and_ports; // for the coloration of edges.
     QGraphicsLineItem* current_line_item;
     int from_port, to_port;
 };
