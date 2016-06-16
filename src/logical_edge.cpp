@@ -4,13 +4,15 @@
 #include "graphic_edge.h"
 void Logical_Edge::print(std::ostream& comp_stream)
 {
-    comp_stream << "<edge>"<<std::endl<<" <from><name>"<<from<<"</name>";
+    comp_stream << "\t\t<edge>"<<std::endl<<"\t\t\t<from>" <<std::endl;
+    comp_stream << "\t\t\t<name>"<<from<<"</name>"<<std::endl;
     if (from_port!=NO_PORT)
-        comp_stream << "<port>"<<boost::lexical_cast<std::string>(from_port)<<"</port>";
-    comp_stream << "</from>"<<std::endl<<"<to><name>"<<to<<"</name>";
+        comp_stream << "\t\t\t<port>"<<boost::lexical_cast<std::string>(from_port)<<"</port>"<<std::endl;
+    comp_stream << "\t\t\t</from>"<<std::endl<<"\t\t\t<to>"<<std::endl;
+    comp_stream << "\t\t\t<name>"<<to<<"</name>"<<std::endl;
     if (to_port!=NO_PORT)
-        comp_stream <<  "<port>"+boost::lexical_cast<std::string>(to)+"</port>";
-    comp_stream <<"</to>"<<std::endl<<"</edge>"<<std::endl;
+        comp_stream <<"\t\t\t<port>"+boost::lexical_cast<std::string>(to_port)+"</port>"<<std::endl;
+    comp_stream <<"\t\t\t</to>"<<std::endl<<"\t\t</edge>"<<std::endl;
 }
 
 std::pair< std::string, int > Logical_Edge::get_from()

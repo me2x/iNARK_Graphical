@@ -82,20 +82,26 @@ void MainInterface::save_file()
         std::ofstream myfile;
         std::stringstream opt;
     myfile.open (filename.toStdString());
+    myfile << "<root>" << std::endl << "\t<components>" <<std::endl;
+    opt << "\t<options>"<<std::endl;
     for (std::map<Graphic_Vertex*,std::shared_ptr<Logical_Vertex>>::iterator it = vertices.begin(); it != vertices.end();++it)
     {
         std::cout << "printing " <<std::endl;
         (*it).second->print(myfile,opt);
         std::cout << "after printing " <<std::endl;
     }
+    myfile << "\t</components>" <<std::endl;
+    opt << "\t</options>"<<std::endl;
+    myfile << "\t<edges>" <<std::endl;
     for (std::map<std::shared_ptr<Graphic_Edge>,std::shared_ptr<Logical_Edge>>::iterator it =  edges.begin(); it !=  edges.end();++it)
     {
         std::cout << "printing " <<std::endl;
         (*it).second->print(myfile);
         std::cout << "after printing " <<std::endl;
     }
-    opt << "option stream" <<std::endl;
+    myfile << "\t</edges>" <<std::endl;
     myfile<<opt.str();
+    myfile<<"</root>"<<std::endl;
     myfile.close(); 
 
         

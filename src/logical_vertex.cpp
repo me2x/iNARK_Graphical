@@ -73,15 +73,28 @@ void Logical_Vertex::print(std::ostream& comp_stream, std::ostream& opt_stream)
     std::cout <<"comp opt sizee is: "<<components_opt.size()<<std::endl;
     if (components_opt.size()==1)
     {
-        comp_stream << "<component>"<<std::endl<<"<name>"<<name<<"</name>"<<std::endl;
+        comp_stream << "\t\t<component>"<<std::endl<<"\t\t\t<name>"<<(*name)<<"</name>"<<std::endl;
+        comp_stream << "\t\t\t<layer>"<<commons::Layer_to_int(layer)<<"</layer>"<<std::endl;
         (components_opt.at(0))->print(comp_stream);
-        comp_stream <<"</component>"<<std::endl; //has to be finished
+        comp_stream <<"\t\t</component>"<<std::endl; //has to be finished
         
     }
     else
     {
-        opt_stream << "<component>"<<std::endl<<"<name>"<<name<<"</name>"<<std::endl<<"</component>"<<std::endl; //has to be finished
-        components_opt.at(0)->print(opt_stream);
+        comp_stream << "\t\t<component>"<<std::endl<<"\t\t\t<name>"<<(*name)<<"</name>"<<std::endl; //has to be finished
+        comp_stream << "\t\t\t<layer>"<<commons::Layer_to_int(layer)<<"</layer>"<<std::endl;
+        comp_stream << "\t\t\t<opt>" << (*name)<<"_opt" <<"</opt>"<<std::endl;
+        comp_stream <<"\t\t</component>"<<std::endl;
+        opt_stream <<  "\t\t<opt>" << std::endl;
+        opt_stream << "\t\t\t<name>" << (*name)<<"_opt"<<"</name>" <<std::endl;
+        for( std::vector<std::shared_ptr<Vertex_Virtual> >::iterator it = components_opt.begin(); it != components_opt.end();++it)
+        {
+            opt_stream << "\t\t\t<enum>" <<std::endl;
+            (*it)->print(opt_stream);
+            opt_stream << "\t\t\t</enum>" <<std::endl;
+            
+        }
+        opt_stream <<"\t\t</opt>"<<std::endl;
     }
 }
 
@@ -89,23 +102,45 @@ void Logical_Vertex::print(std::ostream& comp_stream, std::ostream& opt_stream)
 
 void L1_Vertex::print(std::ostream& out_stream)
 {
-    out_stream<<"L1 print"<<std::endl;
+    //out_stream<<"L1 print"<<std::endl;
 }
 void L2_Vertex::print(std::ostream& out_stream)
 {
-    out_stream<<"L2 print"<<std::endl;
+    //out_stream<<"L2 print"<<std::endl;
 }
 void L3_Vertex::print(std::ostream& out_stream)
 {
-    out_stream<<"L3 print"<<std::endl;
+    out_stream<<"\t\t\t\t<priority_handling>"<<scheduler_type<<"</priority_handling>"<<std::endl;
+    out_stream<<"\t\t\t\t<slots>"<<std::endl;
+    for(std::map<int,int>::iterator it = OS_slots->begin(); it != OS_slots->end(); ++it)
+    {
+        out_stream<<"\t\t\t\t\t<slot>"<<std::endl;
+        out_stream<<"\t\t\t\t\t\t<priority>"<<it->second<<"</priority>"<<std::endl;
+        out_stream<<"\t\t\t\t\t\t<id>"<<it->first<<"</id>"<<std::endl;
+        out_stream<<"\t\t\t\t\t</slot>"<<std::endl;
+    }
+    out_stream<<"\t\t\t\t</slots>"<<std::endl;
 }
 void L4_Vertex::print(std::ostream& out_stream)
 {
-    out_stream<<"L4 print"<<std::endl;
+    out_stream<<"\t\t\t\t<priority_handling>"<<scheduler_type<<"</priority_handling>"<<std::endl;
+    out_stream<<"\t\t\t\t<type>"<<component_type<<"</type>"<<std::endl;
+    out_stream<<"\t\t\t\t<ports>"<<std::endl;
+    for(std::map<int,Port>::iterator it = ports->begin(); it != ports->end(); ++it)
+    {
+        out_stream<<"\t\t\t\t\t<port>"<<std::endl;
+        out_stream<<"\t\t\t\t\t\t<priority>"<<it->second.priority<<"</priority>"<<std::endl;
+        out_stream<<"\t\t\t\t\t\t<isMaster>"<<it->second.isMaster<<"</isMaster>"<<std::endl;
+        out_stream<<"\t\t\t\t\t\t<associatedPort>"<<it->second.associate_id<<"</associatedPort>"<<std::endl;
+        out_stream<<"\t\t\t\t\t\t<id>"<<it->first<<"</id>"<<std::endl;
+        out_stream<<"\t\t\t\t\t</port>"<<std::endl;
+    }
+    out_stream<<"\t\t\t\t</ports>"<<std::endl;
+    
 }
 void L5_Vertex::print(std::ostream& out_stream)
 {
-    out_stream<<"L5 print"<<std::endl;
+    //out_stream<<"L5 print"<<std::endl;
 }
 
 
