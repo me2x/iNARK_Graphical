@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <QPainter>
+#include <common.h>
 class Graphic_Edge;
 class Graphic_Vertex : public QGraphicsObject
 {
@@ -19,7 +20,7 @@ public:
     }
     Graphic_Vertex();
     ~Graphic_Vertex();
-    void setLayer(int i);
+    void setLayer(Layer i);
     QRectF boundingRect() const;
     QRectF rect();
     void setArrowTarget(); //serve per deselezionare quando viene rilasciato dal click crea arrow. 

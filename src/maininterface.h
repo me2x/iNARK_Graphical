@@ -114,11 +114,6 @@ private:
     Graphic_Vertex* starting_object,*arrival_object;
     std::shared_ptr<Graphic_Edge> selected_edge;
     //popup vari ed eventuali :S
-    std::shared_ptr<L1_popup> l1;
-    std::shared_ptr<l2_popup> l2;
-    std::shared_ptr<l3_popup> l3;
-    std::shared_ptr<l4_popup> l4;
-    std::shared_ptr<l5_popup> l5;
     std::shared_ptr<Ports_Popup> ports;
     std::shared_ptr<Tab_popup> tab_pop;
     //utilities

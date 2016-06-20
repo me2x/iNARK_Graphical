@@ -4,6 +4,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <qitemselectionmodel.h>
 #include "graphic_edge.h"
+
 Graphic_Vertex::Graphic_Vertex()
 {
     setFlag(ItemIsMovable);
@@ -108,31 +109,31 @@ void Graphic_Vertex::setArrowTarget()
 {
     arrow_target=true;
 }
-void Graphic_Vertex::setLayer(int i)
+void Graphic_Vertex::setLayer(Layer i)
 {
   switch (i)
     {
-        case 0:
+        case Layer::FUNCTION:
         {
             brush = QBrush(Qt::yellow);
             break;
         }
-        case 1:
+        case Layer::TASK:
         {
             brush = QBrush(Qt::magenta);
             break;
         }
-        case 2:
+        case Layer::CONTROLLER:
         {
             brush = QBrush(Qt::cyan);
             break;
         }
-        case 3:
+        case Layer::RESOURCE:
         {
-            brush = QBrush(Qt::blue);
+            brush = QBrush(Qt::red);
             break;
         }
-        case 4:
+        case Layer::PHYSICAL:
         {
             brush = QBrush(Qt::green);
             break;

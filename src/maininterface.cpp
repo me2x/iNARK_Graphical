@@ -65,6 +65,292 @@ void MainInterface::load_file()
     if (!filename.isNull())
     {
         std::cout<<"build graph"<<std::endl;
+        using boost::property_tree::ptree;
+    ptree pt;
+    read_xml(filename.toStdString(),pt);
+    
+    //the following data structures are temporary.
+    std::map<std::string, std::shared_ptr<Logical_Vertex>> opt_map;
+    std::map<std::string,Graphic_Vertex*> graph_vtxs_map_tmp; //to draw edges.
+    std::list<std::shared_ptr<Logical_Vertex>> vertices_list;
+    BOOST_FOREACH(ptree::value_type &v,pt.get_child("root.components"))
+        {
+            //build log vtx.
+            std::shared_ptr<Logical_Vertex> vtx_ptr;
+            vtx_ptr.reset(new Logical_Vertex());
+            std::shared_ptr<std::string> name; 
+            name.reset(new std::string(v.second.get_child("name").get_value<std::string>()));
+            vertices_list.push_back(vtx_ptr); //both the opt and the non opt have to be enlisted
+            if (!names->insert(*(name)).second)
+                throw std::runtime_error("loading an input with two components with the same name");
+            //opt? no.
+            if (v.second.get_child_optional("opt"))
+            {
+                vtx_ptr->name = name;
+                vtx_ptr->layer = commons::int_to_Layer((v.second.get_child("layer")).get_value<int>());
+                opt_map.insert(std::make_pair(v.second.get_child("opt").get_value<std::string>(),vtx_ptr));
+            }
+            else
+            {
+                switch (commons::int_to_Layer((v.second.get_child("layer")).get_value<int>()))
+                {
+                    //case x : thisvtx->create_Lx_component();
+                    case FUNCTION:
+                    {
+                        vtx_ptr->create_L1_component(name);  
+                        break;
+                    }
+                    case TASK:
+                    {
+                        vtx_ptr->create_L2_component(name);
+                        break;
+                    }    
+                    case CONTROLLER:
+                    {
+                        Component_Priority_Category OS_scheduler_type;
+                        if(v.second.get_child_optional("priority_handling"))
+                        {
+                            OS_scheduler_type=commons::int_To_Priority_Handler(v.second.get_child("priority_handling").get_value<int>()+1);
+                        }
+                        else
+                        {
+                            throw std::runtime_error("input error: no priority handler in layer 3 component");
+                            //TODO error handling
+                        }
+                        std::shared_ptr< std::map<int,int> > priority_slots(new std::map<int,int>());
+                            BOOST_FOREACH(ptree::value_type &i_v,v.second.get_child("slots"))
+                            {
+                                int id = i_v.second.get_child("id").get_value<int>();
+                                int pr = i_v.second.get_child_optional("priority")?(i_v.second.get_child("priority").get_value<int>()):Priority::NO_PRIORITY;
+                                priority_slots->insert(std::make_pair(id,pr));
+                            }
+                        vtx_ptr->create_L3_component(name,OS_scheduler_type,priority_slots);
+                        break;
+                    }
+                    case RESOURCE:
+                    {
+                        std::shared_ptr<std::map<int,Port>> ports_map (new std::map<int,Port>());
+                        if(v.second.get_child_optional("ports"))
+                        {
+                            BOOST_FOREACH(ptree::value_type &i_v,v.second.get_child("ports"))
+                            {
+                                Port p;
+                                p.isMaster = i_v.second.get_child("isMaster").get_value<int>()==1? true : false;
+                                int id = i_v.second.get_child("id").get_value<int>();
+                                p.associate_id=i_v.second.get_child_optional("associatedPort")? i_v.second.get_child("associatedPort").get_value<int>():NO_PORT;
+                                p.priority = i_v.second.get_child_optional("priority")?i_v.second.get_child("priority").get_value<int>():0;
+                                auto res = ports_map->insert(std::make_pair(id,p));
+                                if (!res.second)
+                                    throw std::runtime_error("input error: port already exists");
+                            }
+                        }
+                        else
+                        {
+                            throw std::runtime_error("input error: layer 4 component without ports");
+                        }
+                        int component_type;
+                        if(v.second.get_child_optional("type"))
+                        {
+                            component_type=(v.second.get_child("type").get_value<int>());
+                        }
+                        else
+                        {
+                            component_type = TYPE_SIZE;
+                            //TODO error handling because this should not make the program crash
+                        }
+                        int component_priority_type;
+                        if(v.second.get_child_optional("priority_handling"))
+                        {
+                            component_priority_type=(v.second.get_child("priority_handling").get_value<int>()+1);
+                        }
+                        else throw std::runtime_error("input error: no priority handling in 4th level"+(*name));
+                        vtx_ptr->create_L4_component(name,component_priority_type,component_type,ports_map); 
+                        
+                        break;
+                    }
+                    case PHYSICAL:
+                    {
+                        vtx_ptr->create_L5_component(name);
+                        break;
+                    }
+                }
+            }
+            
+        }
+    if (pt.get_child_optional("root.options"))
+    {
+        BOOST_FOREACH(ptree::value_type &v,pt.get_child("root.options"))
+        {
+            //sono a opt, get logical vtx and stuff
+            std::shared_ptr<Logical_Vertex> vtx_ptr;
+            std::string opt_name = v.second.get_child("name").get_value<std::string>();
+            vtx_ptr = opt_map.at(opt_name);
+            BOOST_FOREACH(ptree::value_type &i_v, v.second) //dovrebbe prendere tutti i child di second (aka opt)
+            {
+                std::cout<<"examining options"<<std::endl;
+                bool first = true;
+                if (i_v.first == "enum")
+                {
+                    //switch on layer. 
+                    switch (vtx_ptr->layer)
+                    {
+                        case CONTROLLER:
+                        {
+                            Component_Priority_Category OS_scheduler_type;
+                            if(i_v.second.get_child_optional("priority_handling"))
+                            {
+                                OS_scheduler_type=commons::int_To_Priority_Handler(i_v.second.get_child("priority_handling").get_value<int>()+1);//FIXME in commons va da 1 a 3, nell xml da 0 a 2
+                            }
+                            else
+                            {
+                                throw std::runtime_error("input error: no priority handler in layer 3 component");
+                                //TODO error handling
+                            }
+                            if (first)
+                            {
+                                std::shared_ptr< std::map<int,int> > priority_slots(new std::map<int,int>());
+                                    BOOST_FOREACH(ptree::value_type &i_v2,i_v.second.get_child("slots"))
+                                    {
+                                        int id = i_v2.second.get_child("id").get_value<int>();
+                                        int pr = i_v2.second.get_child_optional("priority")?(i_v2.second.get_child("priority").get_value<int>()):Priority::NO_PRIORITY;
+                                        priority_slots->insert(std::make_pair(id,pr));
+                                    }
+                                    
+                                vtx_ptr->create_L3_component(vtx_ptr->name,OS_scheduler_type,priority_slots);
+                                first = false;
+                            }
+                            else
+                                vtx_ptr->add_L3_opt(OS_scheduler_type);
+                            break;
+                        }
+                        case RESOURCE:
+                        {
+                             int component_type;
+                            if(i_v.second.get_child_optional("type"))
+                            {
+                                component_type=(i_v.second.get_child("type").get_value<int>());
+                            }
+                            else
+                            {
+                                component_type = TYPE_SIZE;
+                                //TODO error handling because this should not make the program crash
+                            }
+                            int component_priority_type;
+                            if(i_v.second.get_child_optional("priority_handling"))
+                            {
+                                component_priority_type=((i_v.second.get_child("priority_handling").get_value<int>()+1));
+                            }
+                            else throw std::runtime_error("input error: no priority handling in 4th level"+(*vtx_ptr->name));
+                            if (first)
+                            {
+                                std::shared_ptr<std::map<int,Port>> ports_map (new std::map<int,Port>());
+                                if(i_v.second.get_child_optional("ports"))
+                                {
+                                    BOOST_FOREACH(ptree::value_type &i_v2,i_v.second.get_child("ports"))
+                                    {
+                                        Port p;
+                                        p.isMaster = i_v2.second.get_child("isMaster").get_value<int>()==1? true : false;
+                                        int id = i_v2.second.get_child("id").get_value<int>();
+                                        p.associate_id=i_v2.second.get_child_optional("associatedPort")? i_v2.second.get_child("associatedPort").get_value<int>():NO_PORT;
+                                        p.priority = i_v2.second.get_child_optional("priority")?i_v2.second.get_child("priority").get_value<int>():0;
+                                        auto res = ports_map->insert(std::make_pair(id,p));
+                                        if (!res.second)
+                                            throw std::runtime_error("input error: port already exists");
+                                    }
+                                }
+                                else
+                                {
+                                    throw std::runtime_error("input error: layer 4 component without ports");
+                                }                           
+                                vtx_ptr->create_L4_component(vtx_ptr->name,component_priority_type,component_type,ports_map); 
+                            }
+                            else
+                                vtx_ptr->add_L4_opt(component_priority_type,component_type);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }    //here the list of logical vertices should be complete. graphical ones can be created.
+    std::vector<qreal> xpos = {1,1,1,1,1};
+    std::vector<qreal> ypos = {-200, -100, 0, 100, 200};
+   
+    for (std::list<std::shared_ptr<Logical_Vertex>>::iterator it =  vertices_list.begin(); it != vertices_list.end(); ++it)
+    {
+        //insert some sort of "position offsets" to avoid all the components are in position 0,0 of the scene.
+                   
+        std::shared_ptr<Logical_Vertex> lvtx = (*it);
+        Graphic_Vertex* gvtx = new Graphic_Vertex();
+        gvtx->setLayer(lvtx->layer);
+        scene->addItem(gvtx);
+        
+        
+        
+        
+        gvtx->setPos(xpos.at((lvtx->layer)),ypos.at((lvtx->layer)));
+        std::cout <<"xpos before: "<<xpos.at(lvtx->layer)<<std::endl;
+        xpos.at((lvtx->layer))>0?xpos.at((lvtx->layer)) = xpos.at((lvtx->layer))*-1 -100 : xpos.at((lvtx->layer)) = std::abs(xpos.at((lvtx->layer))); 
+        std::cout <<"xpos after: "<<xpos.at(lvtx->layer)<<std::endl;
+        
+        
+        
+        connect(gvtx,SIGNAL(riquadroCliccatoSx()),this,SLOT(component_clicked()));
+        connect(gvtx,SIGNAL(riquadroMosso()),this,SLOT(break_line_drawing()));
+        connect(gvtx,SIGNAL(riquadroCliccatoDx()),this,SLOT(break_line_drawing()));
+        switch (lvtx->layer)
+        {
+        case FUNCTION:
+                {
+                    connect(gvtx,SIGNAL(riquadroDoubleClick()),this,SLOT(start_update_L1_object()));
+                    break;
+                }
+                case TASK:
+                {
+                    connect(gvtx,SIGNAL(riquadroDoubleClick()),this,SLOT(start_update_L2_object()));
+                    break;
+                }
+                case CONTROLLER:
+                {
+                    connect(gvtx,SIGNAL(riquadroDoubleClick()),this,SLOT(start_update_L3_object()));
+                    break;
+                }
+                case RESOURCE:
+                {
+                    connect(gvtx,SIGNAL(riquadroDoubleClick()),this,SLOT(start_update_L4_object()));
+                    break;
+                }
+                case PHYSICAL:
+                {
+                    connect(gvtx,SIGNAL(riquadroDoubleClick()),this,SLOT(start_update_L5_object()));
+                    break;
+                }
+                default:
+                {
+                    throw std::runtime_error("create object called without layer set");
+                    break;
+                } 
+        }
+        gvtx->text->setPlainText(QString::fromStdString(*(lvtx->name)));
+        vertices.insert(std::make_pair(gvtx,lvtx));
+        graph_vtxs_map_tmp.insert(std::make_pair(*(lvtx->name),gvtx));
+        //save pair name,vtx* in map
+    }
+    BOOST_FOREACH(ptree::value_type &v,pt.get_child("root.edges"))   
+    {
+        starting_object = graph_vtxs_map_tmp.at(v.second.get_child("from.name").get_value<std::string>());
+        arrival_object = graph_vtxs_map_tmp.at(v.second.get_child("to.name").get_value<std::string>());
+        from_port = (v.second.get_child_optional("from.port"))? v.second.get_child("from.port").get_value<int>() : NO_PORT;
+        to_port = (v.second.get_child_optional("to.port"))? v.second.get_child("to.port").get_value<int>() : NO_PORT;
+        finalize_line();
+        starting_object = nullptr;
+        arrival_object = nullptr;
+        from_port =  NO_PORT;
+        to_port = NO_PORT;
+
+    }
+        
+        
        
     }
 }
@@ -525,7 +811,7 @@ void MainInterface::create_object(Layer l)
 {
     std::shared_ptr<Logical_Vertex> data = tab_pop->get_data();
     Graphic_Vertex* temp= new Graphic_Vertex(); //IMPORTANT: when removed from scene has to be freed
-    temp->setLayer(commons::Layer_to_int(l)-1);
+    temp->setLayer(l); //
     scene->addItem(temp);
     connect(temp,SIGNAL(riquadroCliccatoSx()),this,SLOT(component_clicked()));
     connect(temp,SIGNAL(riquadroMosso()),this,SLOT(break_line_drawing()));
