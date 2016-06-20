@@ -74,7 +74,7 @@ void l4_popup::consolidate_data()
     
     for (int i = 0; i< ui->tableWidget->rowCount();i++)
     {
-        std::cout<<"consolidate data loop enter"<<std::endl;
+        std::cout<<"consolidate data loop enter, row count is: "<<ui->tableWidget->rowCount()<<std::endl;
         Port port;
         QSpinBox *id = qobject_cast<QSpinBox*>(ui->tableWidget->cellWidget(i,0));
         //TODO check != 0

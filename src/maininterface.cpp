@@ -471,12 +471,18 @@ void MainInterface::delete_vertex(Graphic_Vertex* to_be_deleted)
 
 void MainInterface::break_line_drawing()
 {
-    std::cout<<"enter break line drawing"<<std::endl;
-    if (!is_drawing) return;
+    std::cout<<"break line drawing: entry"<<std::endl;
+    if (!is_drawing) 
+    {
+        return;
+    }
     
+    
+    std::cout<<"break line drawing: isdrawing passed"<<std::endl;
     scene->removeItem(current_line_item);
+    std::cout<<"break line drawing: remove line "<<std::endl;
     starting_object->setSelected(false);
-    std::cerr<<"selecteditems size: "<<scene->selectedItems().size()<<std::endl;
+    std::cerr<<"break_line_drawing: set selected false passed size: "<<scene->selectedItems().size()<<std::endl;
     starting_object = nullptr;
     is_drawing = false;
     std::cout <<"exit from break line"<<std::endl;
@@ -550,6 +556,7 @@ void MainInterface::component_clicked()
                 }
                 else
                 {
+                    std::cout<< "no port branch taken"<<std::endl;
                     from_port = NO_PORT;
                     to_port = NO_PORT;
                     finalize_line();
@@ -615,81 +622,94 @@ void MainInterface::get_line_data_from_popup()
     std::pair<int, int> portspair =  ports->get_ports();
     from_port = portspair.first;
     to_port = portspair.second;
-    if (from_port != NO_PORT && to_port != NO_PORT)
+    //if (from_port != NO_PORT && to_port != NO_PORT)
         finalize_line();
-    else
-        break_line_drawing();
+    //else
+    //    break_line_drawing();
+        std::cout<<"geet line from popup: finalize end"<<std::endl;
 }
 void MainInterface::finalize_line()
 {
-    std::cout <<"drawing line"<<std::endl;
-    std::shared_ptr<Logical_Edge> l_edge_ptr;
-    l_edge_ptr.reset(new Logical_Edge(*((vertices.at(starting_object))->name.get()),*((vertices.at(arrival_object))->name.get()),from_port,to_port));
-    std::shared_ptr<Graphic_Edge> edge;
-    edge.reset(new Graphic_Edge()); //should not be an issue, all the insert are internal, and if not done the counter decrease at the exit and the object is freed
-    bool flag_is_inserted = false;
-    if (edges_set.find(l_edge_ptr->get_string())==edges_set.end())
+    //ward: if not from l to l+1, abort.
+    int to_minus_from = commons::Layer_to_int(vertices.at(arrival_object)->layer)-commons::Layer_to_int(vertices.at(starting_object)->layer);
+    if (!(to_minus_from>1|| to_minus_from<0))
     {
-        edges_set.insert(l_edge_ptr->get_string());
-        //insert in arrows done inside the function
-        edge->set_data(starting_object,arrival_object,from_port,to_port,arrows,edge);
-        std::cout <<"graph edge created"<<std::endl;
-        flag_is_inserted = edges.insert(std::make_pair(edge,l_edge_ptr)).second;
+        std::cout <<"drawing line"<<std::endl;
+        std::shared_ptr<Logical_Edge> l_edge_ptr;
+        l_edge_ptr.reset(new Logical_Edge(*((vertices.at(starting_object))->name.get()),*((vertices.at(arrival_object))->name.get()),from_port,to_port));
+        std::shared_ptr<Graphic_Edge> edge;
+        edge.reset(new Graphic_Edge()); //should not be an issue, all the insert are internal, and if not done the counter decrease at the exit and the object is freed
+        bool flag_is_inserted = false;
+        if (edges_set.find(l_edge_ptr->get_string())==edges_set.end())
+        {
+            edges_set.insert(l_edge_ptr->get_string());
+            //insert in arrows done inside the function
+            edge->set_data(starting_object,arrival_object,from_port,to_port,arrows,edge);
+            std::cout <<"graph edge created"<<std::endl;
+            flag_is_inserted = edges.insert(std::make_pair(edge,l_edge_ptr)).second;
+        }
+        else
+        {
+            std::cout<<"edge already exists"<<l_edge_ptr->get_string()<<std::endl;
+        }
+        
+        std::map<std::pair <std::string, int>,std::set<std::shared_ptr<Graphic_Edge>>>::iterator it = used_slot_and_ports.find(l_edge_ptr->get_from());
+        if (it != used_slot_and_ports.end() && flag_is_inserted)
+        {
+            if ((*it).second.size() == 1)
+                (*(*it).second.begin())->set_color(Graphic_Edge::BLUE);
+            edge->set_color(Graphic_Edge::BLUE);
+            used_slot_and_ports.at(it->first).insert(edge);
+        //doppio uso della porta from, colora i due archi partenti da li   ;
+        }
+        else if(from_port != NO_PORT && flag_is_inserted)
+        {
+            //crea set e inserisci arco.
+            std::set<std::shared_ptr<Graphic_Edge>> tmp_set;
+            tmp_set.insert(edge);
+            used_slot_and_ports.insert(std::make_pair(l_edge_ptr->get_from(),tmp_set));        
+        }
+        it = used_slot_and_ports.find(l_edge_ptr->get_to());
+        if (it != used_slot_and_ports.end() && flag_is_inserted)
+        {
+            if ((*it).second.size() == 1)
+                (*(*it).second.begin())->set_color(Graphic_Edge::BLUE);
+            edge->set_color(Graphic_Edge::BLUE);
+            used_slot_and_ports.at(it->first).insert(edge);
+        
+        }
+        else if(to_port != NO_PORT && flag_is_inserted)
+        {
+            std::set<std::shared_ptr<Graphic_Edge>> tmp_set;
+            tmp_set.insert(edge);
+            used_slot_and_ports.insert(std::make_pair(l_edge_ptr->get_to(),tmp_set));        
+        }
+        
+        
+        
+        arrival_object->setSelected(false);
+        arrival_object->setArrowTarget();
+        std::cout << "arrival object is: "<<arrival_object<<std::endl;
+        arrival_object = nullptr;
+        starting_object->setSelected(false);
+        starting_object = nullptr;
+        if (selected_edge.use_count() != 0) 
+        {
+            std::cout<<"finalize line: inside selected edge"<<std::endl;
+            selected_edge->reset_color();
+            selected_edge.reset();
+        }
+        std::cout << "fine finalize line, item selected count is:" <<scene->selectedItems().count()<<std::endl;
+        std::cout << "arrival object is: "<<arrival_object<<std::endl;
+        from_port = NO_PORT;
+        to_port = NO_PORT;
+        //ports.reset();
+        std::cout << "exit point from finalize line"<<std::endl;
     }
     else
-        std::cout<<"edge already exists"<<l_edge_ptr->get_string()<<std::endl;
-    
-    std::map<std::pair <std::string, int>,std::set<std::shared_ptr<Graphic_Edge>>>::iterator it = used_slot_and_ports.find(l_edge_ptr->get_from());
-    if (it != used_slot_and_ports.end() && flag_is_inserted)
     {
-        if ((*it).second.size() == 1)
-            (*(*it).second.begin())->set_color(Graphic_Edge::BLUE);
-        edge->set_color(Graphic_Edge::BLUE);
-        used_slot_and_ports.at(it->first).insert(edge);
-     //doppio uso della porta from, colora i due archi partenti da li   ;
+        std::cout<<"finalize line else branch taken: skip more layers"<<std::endl;
     }
-    else if(from_port != NO_PORT && flag_is_inserted)
-    {
-        //crea set e inserisci arco.
-        std::set<std::shared_ptr<Graphic_Edge>> tmp_set;
-        tmp_set.insert(edge);
-        used_slot_and_ports.insert(std::make_pair(l_edge_ptr->get_from(),tmp_set));        
-    }
-    it = used_slot_and_ports.find(l_edge_ptr->get_to());
-    if (it != used_slot_and_ports.end() && flag_is_inserted)
-    {
-        if ((*it).second.size() == 1)
-            (*(*it).second.begin())->set_color(Graphic_Edge::BLUE);
-        edge->set_color(Graphic_Edge::BLUE);
-        used_slot_and_ports.at(it->first).insert(edge);
-     
-    }
-    else if(to_port != NO_PORT && flag_is_inserted)
-    {
-        std::set<std::shared_ptr<Graphic_Edge>> tmp_set;
-        tmp_set.insert(edge);
-        used_slot_and_ports.insert(std::make_pair(l_edge_ptr->get_to(),tmp_set));        
-    }
-    
-    
-    
-    arrival_object->setSelected(false);
-    arrival_object->setArrowTarget();
-    std::cout << "arrival object is: "<<arrival_object<<std::endl;
-    arrival_object = nullptr;
-    starting_object->setSelected(false);
-    starting_object = nullptr;
-    if (selected_edge.use_count() != 0) 
-    {
-        selected_edge->reset_color();
-        selected_edge.reset();
-    }
-    std::cout << "fine finalize line, item selected count is:" <<scene->selectedItems().count()<<std::endl;
-    std::cout << "arrival object is: "<<arrival_object<<std::endl;
-    from_port = NO_PORT;
-    to_port = NO_PORT;
-    //ports.reset();
-    std::cout << "exit point from finalize line"<<std::endl;
 }
 
 void MainInterface::Layer_1_press_event()

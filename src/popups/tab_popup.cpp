@@ -52,7 +52,7 @@ void Tab_popup::set_data(Layer l, std::shared_ptr< Logical_Vertex > vtx, std::sh
         {
             for (int i = 0; i < vtx->components_opt.size(); i++)
             {
-                std::string opt_string = "opt: "+std::to_string(i); 
+                std::string opt_string = "opt: "; 
                 ui->tabWidget->insertTab(i, new l3_popup(),QIcon(QString("")),QString::fromStdString(opt_string));
         
                 QWidget* wp = ui->tabWidget->widget(i);
@@ -66,7 +66,7 @@ void Tab_popup::set_data(Layer l, std::shared_ptr< Logical_Vertex > vtx, std::sh
         {
             for (int i = 0; i < vtx->components_opt.size(); i++)
             {
-                std::string opt_string = "opt: "+std::to_string(i); 
+                std::string opt_string = "opt: "; 
                 ui->tabWidget->insertTab(i, new l4_popup(),QIcon(QString("")),QString::fromStdString(opt_string));
         
                 QWidget* wp = ui->tabWidget->widget(i);
@@ -125,7 +125,7 @@ void Tab_popup::add_tab()
                 if (l3_obj->get_data() != nullptr)
                     l3_obj->consolidate_data();
             }    
-            ui->tabWidget->insertTab(ui->tabWidget->count(), new l3_popup(),QIcon(QString("")),QString::fromStdString("opt: "+std::to_string(ui->tabWidget->count())));
+            ui->tabWidget->insertTab(ui->tabWidget->count(), new l3_popup(),QIcon(QString("")),QString::fromStdString("opt: "));
             std::shared_ptr<L3_Vertex> new_vtx;
             new_vtx.reset(new L3_Vertex());
             
@@ -151,7 +151,7 @@ void Tab_popup::add_tab()
                 if (l4_obj->get_data() != nullptr)
                     l4_obj->consolidate_data();
             }    
-            ui->tabWidget->insertTab(ui->tabWidget->count(), new l4_popup(),QIcon(QString("")),QString::fromStdString("opt: "+std::to_string(ui->tabWidget->count())));
+            ui->tabWidget->insertTab(ui->tabWidget->count(), new l4_popup(),QIcon(QString("")),QString::fromStdString("opt: "));
             std::shared_ptr<L4_Vertex> new_vtx;
             new_vtx.reset(new L4_Vertex());
             
@@ -184,9 +184,19 @@ void Tab_popup::remove_tab()
 {
     //geets the pointer and deletes the widget. in this way all the shared pointers
     //inside the widget should be updated
+    std::cout <<"remove_tab: enter"<<std::endl;
     QWidget* tmp = ui->tabWidget->currentWidget();
-    ui->tabWidget->removeTab(ui->tabWidget->currentIndex());
-    delete tmp;
+    std::cout <<"remove_tab: select"<<std::endl;
+    int curr_tab_to_rm = ui->tabWidget->currentIndex();
+    if (ui->tabWidget->count() > 1)
+    {
+        ui->tabWidget->setCurrentIndex(curr_tab_to_rm != 0 ? curr_tab_to_rm-1:0);
+        std::cout <<"remove_tab: selected tab is: "<<ui->tabWidget->currentIndex()<<std::endl;
+        ui->tabWidget->removeTab(curr_tab_to_rm);
+        std::cout <<"remove_tab: remove"<<std::endl;
+        delete tmp;
+        std::cout <<"remove_tab: free"<<std::endl;
+    }
 }
 
 
@@ -200,12 +210,13 @@ void Tab_popup::accept()
     QString text = ui->lineEdit_2->text();
     std::string old_name = *(vtx_ptr->name);
     *(vtx_ptr->name) = text.toStdString();
-    
+    std::cout << "tab_popup:accept entry point"<<std::endl;
     if ((names->count(*(vtx_ptr->name)) == 0 && *(vtx_ptr->name) != "")&& !isUpdate ||
         isUpdate && *(vtx_ptr->name) != "" && (old_name == *(vtx_ptr->name)||names->count(*(vtx_ptr->name)) == 0))
         //when updating i want to check if im reusing the same name, and its ok or a new name and this new name has to be unique
     {
         //switch out, differentiate between components with and without opts.
+        std::cout << "tab_popup:enter if"<<std::endl;
         switch (lay)
         {
             case FUNCTION:
@@ -240,10 +251,13 @@ void Tab_popup::accept()
                 vtx_ptr->components_opt.clear();
                 for (int i = 0; i < ui->tabWidget->count(); i++)
                 {
+                    
                     std::cout<<"assign loop, iteration variable value is: "<<i<<std::endl;
                     //assegna a posizione in vettore il vertice presente nel tab.
                     QWidget* wp = ui->tabWidget->widget(i);
                     l4_popup *l4_obj = qobject_cast<l4_popup*>(wp);
+                    if (i != ui->tabWidget->currentIndex())
+                        l4_obj->update_graphic_from_data();
                     l4_obj->consolidate_data();
                     std::cout <<"before insert: size of the components opt is: "<<vtx_ptr->components_opt.size()<<std::endl;
                     vtx_ptr->components_opt.push_back(l4_obj->get_data());
@@ -265,14 +279,16 @@ void Tab_popup::accept()
         std::cout <<"name accepted, size of the components opt is: "<<vtx_ptr->components_opt.size()<<std::endl;
         if (isUpdate && old_name != *(vtx_ptr->name))
         {
+            std::cout << "tab_popup: isUpdate && oldname diverso"<<std::endl;
             names->erase(old_name);
             names->insert(*(vtx_ptr->name));
         }
+        std::cout << "tab_popup:accept"<<std::endl;
         QDialog::accept();
     }
     else 
     {
-        std::cout <<"name refused"<<std::endl;
+        std::cout <<"tab_popup: refuse"<<std::endl;
         QDialog::reject();
         
     }

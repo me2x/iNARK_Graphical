@@ -3,6 +3,7 @@
 #include <iostream>
 #include <QButtonGroup>
 #include "../logical_vertex.h"
+#include "../graphic_edge.h"
 #include <memory>
 void Ports_Popup::exec()
 {
@@ -31,7 +32,7 @@ void Ports_Popup::set_data(std::shared_ptr<Logical_Vertex> from, std::shared_ptr
         for (std::map<int, Port>::iterator it =  l4_ptr_from->ports->begin(); it != l4_ptr_from->ports->end(); ++it)
         {
             std::cout<<"adding qradiobutton"<<std::endl;
-            if ((*it).second.isMaster)
+            if (!(*it).second.isMaster)
             {
                 QRadioButton* radio_ptr = new QRadioButton();
                 radio_ptr->setText(QString::number((*it).first));
@@ -42,7 +43,7 @@ void Ports_Popup::set_data(std::shared_ptr<Logical_Vertex> from, std::shared_ptr
         }
         for (std::map<int, Port>::iterator it =  l4_ptr_to->ports->begin(); it != l4_ptr_to->ports->end(); ++it)
         {
-            if (!(*it).second.isMaster)
+            if ((*it).second.isMaster)
             {
                 std::cout<<"adding qradiobutton to"<<std::endl;
                 QRadioButton* radio_ptr = new QRadioButton();
@@ -85,11 +86,17 @@ Ports_Popup::~Ports_Popup()
 void Ports_Popup::accept()
 {
     //check on size is already been done.
-     if (!isValid || bg2->checkedButton() == 0 || (bg->checkedButton() == 0 && source->layer == TASK))
+    if (!isValid || bg2->checkedButton() == 0 || (bg->checkedButton() == 0 && source->layer != TASK))
+    {
+        std::cout<<"Ports_Popup: accept is rejected isValid: "<<isValid<< std::endl;
+        std::cout<<"Ports_Popup: accept is rejected checkdbutton2: "<<bg2->checkedButton()->text().toInt()<< std::endl;
+        std::cout<<"Ports_Popup: accept is rejected checkdbutton: "<<bg->checkedButton()->text().toInt()<< std::endl;
         QDialog::reject();
+    }
     else
     {
-        from = bg->checkedButton()->text().toInt();
+        std::cout<<"Ports_Popup: accept is accepted"<<std::endl;
+        from =bg->checkedButton() == 0?NO_PORT: bg->checkedButton()->text().toInt();
         to =  bg2->checkedButton()->text().toInt();
         QDialog::accept();
     }

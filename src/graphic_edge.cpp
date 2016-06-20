@@ -89,18 +89,36 @@ void Graphic_Edge::update()
 }
 Graphic_Edge::~Graphic_Edge()
 {
-    arrows.reset();
+    std::cout <<"graphic edge delete begin"<<std::endl;
+    if (arrows.use_count()!= 0)
+    {
+        std::cout <<"graphic edge arrows reset attempt"<<std::endl;
+        arrows.reset();
+        std::cout <<"graphic edge arrows reset"<<std::endl;
+    }
     //do nothing with the Graphic_Vertex *, they are handled by the main interface
     //pointers of no more useful objetcs, have to be deallocated.
-    delete dx_line;
-    delete sx_line;
-    delete label_start;
-    delete label_stop;
-    delete line;
+    std::cout <<"graphic edge pointers deleetion"<<std::endl;
+    if (dx_line!= nullptr)      
+        delete dx_line;
+    if (sx_line!= nullptr)     
+        delete sx_line;
+    if (label_start!= nullptr) 
+        delete label_start;
+    if (label_stop!= nullptr)  
+        delete label_stop;
+    if (line!= nullptr)    
+        delete line;
+    
+    std::cout <<"graphic edge delete end"<<std::endl;
 }
 Graphic_Edge::Graphic_Edge()
 {
-
+    dx_line = nullptr;
+    sx_line = nullptr;
+    line = nullptr;
+    label_start = nullptr;
+    label_stop = nullptr;
 }
 void Graphic_Edge::reset_color()
 {
