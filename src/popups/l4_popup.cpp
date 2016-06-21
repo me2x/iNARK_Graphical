@@ -40,12 +40,14 @@ void l4_popup::add_table_line()
     QSpinBox* spin = new QSpinBox();
     ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 0, spin );
     
+    
     QSpinBox* spin2 = new QSpinBox();
     ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 2, spin2 );
-   
+    spin2->setMinimum(-1);
+    
     QSpinBox* spin3 = new QSpinBox();
     ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 1, spin3 );
-  
+    
     /* getter
      QComboBox *myCB = qobject_cast<QComboBox*>(ui->tableWidget_4->cellWidget(0,0));
      InputComboData << myCB->currentText();
@@ -91,8 +93,9 @@ void l4_popup::consolidate_data()
         data->ports->insert(std::make_pair(id_port,port));
     }
     //get the other data.
+    //actually the Component_Priority_Category goes from 1 to 3, and not 0 to 2, so +1 has to be put in the second.
     data->component_type = ui->chose_layer->currentIndex();
-    data->scheduler_type = ui->chose_layer_2->currentIndex();
+    data->scheduler_type = commons::int_To_Priority_Handler(ui->chose_layer_2->currentIndex());
 }
 
 std::shared_ptr< L4_Vertex > l4_popup::get_data()
@@ -114,12 +117,7 @@ void l4_popup::update_graphic_from_data()
     for (std::map<int,Port>::iterator it = data->ports->begin();it != data->ports->end();++it)
     {
     ui->tableWidget->insertRow(ui->tableWidget->rowCount());
-   /* QComboBox* settingA = new QComboBox();
-    settingA->addItem("100");
-    settingA->addItem("200");
-    settingA->setCurrentIndex((*it).second.priority == 100 ? 0 : 1);
-    ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 1, settingA );
-    */
+
     QComboBox* settingB = new QComboBox();
     settingB->addItem("True");
     settingB->addItem("False");
@@ -131,14 +129,16 @@ void l4_popup::update_graphic_from_data()
     ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 0, spin );
     
     QSpinBox* spin2 = new QSpinBox();
+    spin2->setMinimum(-1);
     spin2->setValue((*it).second.associate_id);
     ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 2, spin2 );
    
     QSpinBox* spin3 = new QSpinBox();
+    
     spin3->setValue((*it).second.priority);
     ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 1, spin3 );
   
     }
     ui->chose_layer->setCurrentIndex(data->component_type);
-    ui->chose_layer_2->setCurrentIndex(data->scheduler_type);
+    ui->chose_layer_2->setCurrentIndex(commons::Priority_Handler_To_Int(data->scheduler_type));
 }

@@ -12,6 +12,7 @@ class Vertex_Virtual
 public:
     virtual void print (std::ostream& out_stream) = 0;
     virtual ~Vertex_Virtual() {};
+    
 };
 
 struct Port
@@ -31,14 +32,16 @@ public:
     std::vector<std::shared_ptr<Vertex_Virtual> > components_opt;
     std::shared_ptr<std::string> name;
     Layer layer;
+    float x_pos;
+    float y_pos;
     void print (std::ostream& comp_stream, std::ostream& opt_stream);
     void create_L1_component(std::shared_ptr<std::string> name);
     void create_L2_component(std::shared_ptr<std::string> name);
-    void create_L3_component(std::shared_ptr< std::string > comp_name, int scheduler_type, std::shared_ptr< std::map< int, int > > sched_slot);
-    void create_L4_component(std::shared_ptr<std::string> name, int scheduler_type, int component_type, std::shared_ptr<std::map<int, Port>> ports);
+    void create_L3_component(std::shared_ptr< std::string > comp_name, Component_Priority_Category scheduler_type, std::shared_ptr< std::map< int, int > > sched_slot);
+    void create_L4_component(std::shared_ptr<std::string> name, Component_Priority_Category scheduler_type, int component_type, std::shared_ptr<std::map<int, Port>> ports);
     void create_L5_component(std::shared_ptr<std::string> name);
-    void add_L3_opt(int scheduler_type);
-    void add_L4_opt(int scheduler_type, int component_type);
+    void add_L3_opt(Component_Priority_Category scheduler_type);
+    void add_L4_opt(Component_Priority_Category scheduler_type, int component_type);
    
 };
 
@@ -57,14 +60,14 @@ class L3_Vertex : public Vertex_Virtual
 {
 public:
     std::shared_ptr<std::map < int, int >> OS_slots; //id and priority //the slots name is a QT define so it cant be used.
-    int scheduler_type;
+    Component_Priority_Category scheduler_type;
     void print(std::ostream& out_stream);
 };
 class L4_Vertex : public Vertex_Virtual
 {
 public:
     std::shared_ptr<std::map < int, Port >>ports; //id is key, other values ar in the struct
-    int scheduler_type;
+    Component_Priority_Category scheduler_type;
     int component_type;
     void print(std::ostream& out_stream);
 };

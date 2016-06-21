@@ -99,6 +99,7 @@ private:
     //in order to eliminate both the item and the graphical item the scene has to be updated before the reset of the shared_ptr
     void delete_vertex(Graphic_Vertex* to_be_deleted);
     void delete_edge(std::shared_ptr<Graphic_Edge> to_be_deleted);
+    void reset();
     //the two following maps will contain the reference between graphical and logical view. if one of the two views is resetted, the other has to be resetted too.
     //TODO sistemare con strutture dati "nuove"
     std::map<Graphic_Vertex*,std::shared_ptr<Logical_Vertex>> vertices; //vertex will not be passed and is the actual graphic thing
