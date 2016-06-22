@@ -151,14 +151,15 @@ void MainInterface::load_file()
                             {
                                 throw std::runtime_error("input error: layer 4 component without ports");
                             }
-                            int component_type;
+                            std::shared_ptr<int> component_type;
+                            component_type.reset(new int (0));
                             if(v.second.get_child_optional("type"))
                             {
-                                component_type=(v.second.get_child("type").get_value<int>());
+                                *(component_type)=(v.second.get_child("type").get_value<int>());
                             }
                             else
                             {
-                                component_type = TYPE_SIZE;
+                                *(component_type) = TYPE_SIZE;
                                 //TODO error handling because this should not make the program crash
                             }
                             Component_Priority_Category component_priority_type;
@@ -188,10 +189,10 @@ void MainInterface::load_file()
                 std::shared_ptr<Logical_Vertex> vtx_ptr;
                 std::string opt_name = v.second.get_child("name").get_value<std::string>();
                 vtx_ptr = opt_map.at(opt_name);
+                bool first = true;
                 BOOST_FOREACH(ptree::value_type &i_v, v.second) //dovrebbe prendere tutti i child di second (aka opt)
                 {
                     std::cout<<"examining options"<<std::endl;
-                    bool first = true;
                     if (i_v.first == "enum")
                     {
                         //switch on layer. 
@@ -228,16 +229,7 @@ void MainInterface::load_file()
                             }
                             case RESOURCE:
                             {
-                                int component_type;
-                                if(i_v.second.get_child_optional("type"))
-                                {
-                                    component_type=(i_v.second.get_child("type").get_value<int>());
-                                }
-                                else
-                                {
-                                    component_type = TYPE_SIZE;
-                                    //TODO error handling because this should not make the program crash
-                                }
+                               
                                 Component_Priority_Category component_priority_type;
                                 if(i_v.second.get_child_optional("priority_handling"))
                                 {
@@ -246,6 +238,17 @@ void MainInterface::load_file()
                                 else throw std::runtime_error("input error: no priority handling in 4th level"+(*vtx_ptr->name));
                                 if (first)
                                 {
+                                    std::shared_ptr<int> component_type;
+                                    component_type.reset(new int (0));
+                                    if(v.second.get_child_optional("type"))
+                                    {
+                                        *(component_type)=(v.second.get_child("type").get_value<int>());
+                                    }
+                                    else
+                                    {
+                                        *(component_type) = TYPE_SIZE;
+                                        //TODO error handling because this should not make the program crash
+                                    }
                                     std::shared_ptr<std::map<int,Port>> ports_map (new std::map<int,Port>());
                                     if(i_v.second.get_child_optional("ports"))
                                     {
@@ -266,9 +269,10 @@ void MainInterface::load_file()
                                         throw std::runtime_error("input error: layer 4 component without ports");
                                     }                           
                                     vtx_ptr->create_L4_component(vtx_ptr->name,component_priority_type,component_type,ports_map); 
+                                    first = false;
                                 }
                                 else
-                                    vtx_ptr->add_L4_opt(component_priority_type,component_type);
+                                    vtx_ptr->add_L4_opt(component_priority_type);
                                 break;
                             }
                         }
@@ -936,7 +940,9 @@ if (selected_edge.use_count() != 0)
             {
                 std::shared_ptr< std::map< int, Port > > ports;
                 ports.reset(new std::map< int, Port>());
-                vtx->create_L4_component(comp_name,ROUND_ROBIN,0,ports);
+                std::shared_ptr<int>comp_type;
+                comp_type.reset(new int(0));
+                vtx->create_L4_component(comp_name,ROUND_ROBIN,comp_type,ports);
                 tab_pop->set_data(RESOURCE,vtx,names,false);
                 connect(tab_pop.get(),SIGNAL(accepted()),this,SLOT(create_L4_obj()));
                 break;

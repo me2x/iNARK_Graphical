@@ -92,9 +92,11 @@ void l4_popup::consolidate_data()
         //data->ports->find(id_port) != data->ports->end? data->ports->at(id_port) = port : 
         data->ports->insert(std::make_pair(id_port,port));
     }
+    std::cout <<"check on port pointer: value is: "<<(data->ports)<<std::endl; 
     //get the other data.
-    //actually the Component_Priority_Category goes from 1 to 3, and not 0 to 2, so +1 has to be put in the second.
-    data->component_type = ui->chose_layer->currentIndex();
+    std::cout <<"pre comp typ reassign check: value is: "<<(data->component_type)<<std::endl;
+    *(data->component_type) = ui->chose_layer->currentIndex();
+    std::cout <<"post comp typ reassign check: value is: "<<(data->component_type)<<std::endl;
     data->scheduler_type = commons::int_To_Priority_Handler(ui->chose_layer_2->currentIndex());
 }
 
@@ -139,6 +141,6 @@ void l4_popup::update_graphic_from_data()
     ui->tableWidget->setCellWidget ( ui->tableWidget->rowCount()-1, 1, spin3 );
   
     }
-    ui->chose_layer->setCurrentIndex(data->component_type);
+    ui->chose_layer->setCurrentIndex(*(data->component_type));
     ui->chose_layer_2->setCurrentIndex(commons::Priority_Handler_To_Int(data->scheduler_type));
 }

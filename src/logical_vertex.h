@@ -38,10 +38,10 @@ public:
     void create_L1_component(std::shared_ptr<std::string> name);
     void create_L2_component(std::shared_ptr<std::string> name);
     void create_L3_component(std::shared_ptr< std::string > comp_name, Component_Priority_Category scheduler_type, std::shared_ptr< std::map< int, int > > sched_slot);
-    void create_L4_component(std::shared_ptr<std::string> name, Component_Priority_Category scheduler_type, int component_type, std::shared_ptr<std::map<int, Port>> ports);
+    void create_L4_component(std::shared_ptr<std::string> name, Component_Priority_Category scheduler_type, std::shared_ptr<int> component_type, std::shared_ptr<std::map<int, Port>> ports);
     void create_L5_component(std::shared_ptr<std::string> name);
     void add_L3_opt(Component_Priority_Category scheduler_type);
-    void add_L4_opt(Component_Priority_Category scheduler_type, int component_type);
+    void add_L4_opt(Component_Priority_Category scheduler_type);
    
 };
 
@@ -68,7 +68,7 @@ class L4_Vertex : public Vertex_Virtual
 public:
     std::shared_ptr<std::map < int, Port >>ports; //id is key, other values ar in the struct
     Component_Priority_Category scheduler_type;
-    int component_type;
+    std::shared_ptr<int> component_type;
     void print(std::ostream& out_stream);
 };
 class L5_Vertex : public Vertex_Virtual

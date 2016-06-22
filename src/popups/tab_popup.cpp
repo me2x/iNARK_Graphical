@@ -157,7 +157,7 @@ void Tab_popup::add_tab()
             
             std::shared_ptr<L4_Vertex> tmp = std::static_pointer_cast<L4_Vertex>(vtx_ptr->components_opt.at(0));
             new_vtx->ports = tmp->ports;
-            
+            new_vtx->component_type = tmp->component_type;
             QWidget* wp2 = ui->tabWidget->widget(ui->tabWidget->count()-1);
             previous_tab = ui->tabWidget->count()-1;
             l4_popup* l4_obj2 = qobject_cast<l4_popup*>(wp2);

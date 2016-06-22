@@ -28,7 +28,7 @@ void Logical_Vertex::create_L3_component(std::shared_ptr< std::string > comp_nam
     name = comp_name;
     layer = Layer::CONTROLLER;
 }
-void Logical_Vertex::create_L4_component(std::shared_ptr< std::string > comp_name, Component_Priority_Category scheduler_type, int component_type, std::shared_ptr< std::map< int, Port > > ports)
+void Logical_Vertex::create_L4_component(std::shared_ptr< std::string > comp_name, Component_Priority_Category scheduler_type, std::shared_ptr<int> component_type, std::shared_ptr< std::map< int, Port > > ports)
 {
     std::shared_ptr<L4_Vertex> ptr;
     ptr.reset(new L4_Vertex());
@@ -57,13 +57,14 @@ void Logical_Vertex::add_L3_opt(Component_Priority_Category scheduler_type)
     ptr->OS_slots = tmp->OS_slots;
     components_opt.push_back(ptr);
 }
-void Logical_Vertex::add_L4_opt(Component_Priority_Category scheduler_type, int component_type)
+void Logical_Vertex::add_L4_opt(Component_Priority_Category scheduler_type)
 {
+    std::cout<<"components_opt size is: "<<components_opt.size()<<std::endl;
     std::shared_ptr<L4_Vertex> ptr;
     ptr.reset(new L4_Vertex());
     std::shared_ptr<L4_Vertex> tmp = std::static_pointer_cast<L4_Vertex>(components_opt.at(0));
     ptr->ports = tmp->ports;
-    ptr->component_type = component_type;
+    ptr->component_type = tmp->component_type;
     ptr->scheduler_type = scheduler_type;
     components_opt.push_back(ptr);
 }
@@ -129,7 +130,7 @@ void L3_Vertex::print(std::ostream& out_stream)
 void L4_Vertex::print(std::ostream& out_stream)
 {
     out_stream<<"\t\t\t\t<priority_handling>"<<commons::Priority_Handler_To_Int(scheduler_type)<<"</priority_handling>"<<std::endl;
-    out_stream<<"\t\t\t\t<type>"<<component_type<<"</type>"<<std::endl;
+    out_stream<<"\t\t\t\t<type>"<<*component_type<<"</type>"<<std::endl;
     out_stream<<"\t\t\t\t<ports>"<<std::endl;
     for(std::map<int,Port>::iterator it = ports->begin(); it != ports->end(); ++it)
     {
